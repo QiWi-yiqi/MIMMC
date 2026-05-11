@@ -33,15 +33,25 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Design tokens ─────────────────────────────────────────────────────────────
-NAVY=  "#0A1628"; SLATE= "#112240"; PANEL= "#1A2F4E"; BORDER="#1E3A5F"
-GREEN= "#00D4AA"; GOLD=  "#F0B429"; RED=   "#FF4757"; WHITE= "#E8EDF4"
-MUTED= "#6B86A8"; CBKG=  "#0D1F38"
-SEG_C = ["#00D4AA","#F0B429","#4ECDC4","#45B7D1","#96CEB4","#FFEAA7","#DDA0DD","#F08080"]
+# ── Design tokens: clean-tech premium theme ───────────────────────────────────
+NAVY   = "#07111F"   # page background
+SLATE  = "#0B1B33"   # sidebar / tab bar
+PANEL  = "#102A4C"   # cards
+PANEL2 = "#143761"   # lighter panel
+BORDER = "#2B6A9F"
+CYAN   = "#22D3EE"
+GREEN  = "#26E7A6"
+GOLD   = "#FBBF24"
+ORANGE = "#FB923C"
+RED    = "#FB4B6B"
+WHITE  = "#F5F7FB"
+MUTED  = "#A7B8CC"
+CBKG   = "#08192F"
+SEG_C = ["#22D3EE", "#26E7A6", "#FBBF24", "#FB923C", "#A78BFA", "#F472B6", "#60A5FA", "#34D399"]
 PLY = dict(
     paper_bgcolor=CBKG, plot_bgcolor=CBKG,
-    font=dict(family="Georgia,serif",color=WHITE,size=11),
-    title_font=dict(family="Georgia,serif",color=WHITE,size=14),
+    font=dict(family="Inter, sans-serif",color=WHITE,size=11),
+    title_font=dict(family="Space Grotesk, sans-serif",color=WHITE,size=15),
     legend=dict(bgcolor="rgba(10,22,40,.8)",bordercolor=BORDER,borderwidth=1,
                 font=dict(color=WHITE,size=10)),
     xaxis=dict(gridcolor="rgba(30,58,95,.5)",linecolor=BORDER,
@@ -53,50 +63,96 @@ PLY = dict(
 
 # ── CSS ──────────────────────────────────────────────────────────────────────
 st.markdown(f"""<style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+Pro:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
-html,body,[class*="css"]{{background:{NAVY}!important;color:{WHITE};font-family:'Source Sans Pro',sans-serif;}}
-#MainMenu,footer,header{{visibility:hidden;}}
-.block-container{{padding-top:.8rem!important;max-width:1440px!important;}}
-.corp-hdr{{background:linear-gradient(135deg,{SLATE},{PANEL});border-bottom:2px solid {GOLD};
-  border-radius:4px;padding:16px 26px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;}}
-.corp-hdr h1{{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:{WHITE};margin:0;}}
-.corp-hdr .sub{{font-size:.68rem;color:{MUTED};margin-top:3px;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;}}
-.corp-hdr .bdg{{background:{GOLD};color:{NAVY};font-family:'IBM Plex Mono',monospace;font-size:.65rem;
-  font-weight:600;padding:4px 10px;border-radius:2px;letter-spacing:.08em;}}
-.ml{{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.14em;color:{GOLD};text-transform:uppercase;margin-bottom:3px;}}
-.mt{{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:600;color:{WHITE};
-  border-left:3px solid {GOLD};padding-left:11px;margin-bottom:16px;}}
-.hero{{background:linear-gradient(135deg,{PANEL},{SLATE});border:1px solid {GOLD};border-radius:6px;
-  padding:22px 26px;margin-bottom:18px;position:relative;}}
-.hero::before{{content:'';position:absolute;top:0;right:0;width:150px;height:150px;
-  background:radial-gradient(circle at top right,rgba(240,180,41,.07),transparent 70%);pointer-events:none;}}
-.hw{{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;color:{GOLD};margin-bottom:3px;}}
-.hs{{font-size:.82rem;color:{MUTED};margin-bottom:14px;}}
-.hst{{display:flex;gap:32px;flex-wrap:wrap;margin-top:8px;}}
-.hsl{{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:{MUTED};letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;}}
-.hsv{{font-family:'IBM Plex Mono',monospace;font-size:1rem;color:{GREEN};font-weight:500;}}
-.asmp{{background:{PANEL};border:1px solid {BORDER};border-left:4px solid {GOLD};border-radius:4px;
-  padding:12px 16px;font-size:.8rem;line-height:1.7;color:{WHITE};margin:12px 0;}}
-.asmp strong{{color:{GOLD};}}
-.ins{{background:{PANEL};border:1px solid {BORDER};border-left:4px solid {GREEN};border-radius:4px;
-  padding:12px 16px;font-size:.8rem;line-height:1.7;color:{WHITE};margin:12px 0;}}
-.ins strong{{color:{GREEN};}}
-.crok{{display:inline-block;background:rgba(0,212,170,.15);color:{GREEN};border:1px solid rgba(0,212,170,.3);
-  border-radius:2px;padding:2px 7px;font-family:'IBM Plex Mono',monospace;font-size:.65rem;}}
-.crbd{{display:inline-block;background:rgba(255,71,87,.15);color:{RED};border:1px solid rgba(255,71,87,.3);
-  border-radius:2px;padding:2px 7px;font-family:'IBM Plex Mono',monospace;font-size:.65rem;}}
-hr.r{{border:none;border-top:1px solid {BORDER};margin:20px 0;}}
-[data-testid="stSidebar"]{{background:{SLATE}!important;border-right:1px solid {BORDER};}}
-[data-testid="stSidebar"] h2,[data-testid="stSidebar"] h3{{font-family:'IBM Plex Mono',monospace;font-size:.65rem;
-  letter-spacing:.12em;color:{GOLD};text-transform:uppercase;border-bottom:1px solid {BORDER};padding-bottom:5px;margin-top:14px;}}
-[data-testid="stSidebar"] label{{font-size:.76rem;color:{MUTED};}}
-.stTabs [data-baseweb="tab-list"]{{background:{SLATE};border-bottom:1px solid {BORDER};gap:0;}}
-.stTabs [data-baseweb="tab"]{{background:transparent;color:{MUTED};font-family:'IBM Plex Mono',monospace;
-  font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;padding:10px 16px;border-bottom:2px solid transparent;}}
-.stTabs [aria-selected="true"]{{color:{GOLD}!important;border-bottom:2px solid {GOLD}!important;}}
-[data-testid="stMetric"]{{background:{PANEL};border:1px solid {BORDER};border-radius:4px;padding:12px!important;}}
-[data-testid="stMetricLabel"]{{color:{MUTED}!important;font-size:.7rem!important;}}
-[data-testid="stMetricValue"]{{color:{WHITE}!important;font-family:'Playfair Display',serif!important;}}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {{ --app-bg:{NAVY}; --panel:{PANEL}; --panel2:{PANEL2}; --border:{BORDER}; --text:{WHITE}; --muted:{MUTED}; --gold:{GOLD}; --cyan:{CYAN}; --green:{GREEN}; }}
+html, body, .stApp, [data-testid="stAppViewContainer"] {{
+  background:
+    radial-gradient(circle at 18% 8%, rgba(34,211,238,.16), transparent 28%),
+    radial-gradient(circle at 92% 0%, rgba(251,191,36,.12), transparent 24%),
+    linear-gradient(135deg, #07111F 0%, #0B1B33 48%, #06101D 100%) !important;
+  color:{WHITE};
+  font-family:'Inter', sans-serif;
+}}
+#MainMenu, footer, header {{ visibility:hidden; }}
+.block-container {{
+  padding-top:1.05rem!important; padding-left:2.2rem!important; padding-right:2.2rem!important;
+  max-width:1500px!important;
+}}
+section.main > div {{ background:transparent!important; }}
+
+/* top header */
+.corp-hdr {{
+  background:linear-gradient(135deg, rgba(20,55,97,.96), rgba(8,25,47,.98));
+  border:1px solid rgba(34,211,238,.28); border-bottom:3px solid {GOLD};
+  box-shadow:0 14px 40px rgba(0,0,0,.28); border-radius:18px;
+  padding:20px 28px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; gap:16px;
+}}
+.corp-hdr h1 {{font-family:'Space Grotesk',sans-serif;font-size:1.75rem;font-weight:700;color:{WHITE};margin:0;letter-spacing:-.03em;}}
+.corp-hdr .sub {{font-size:.72rem;color:{MUTED};margin-top:5px;font-family:'IBM Plex Mono',monospace;letter-spacing:.04em;}}
+.corp-hdr .bdg {{background:linear-gradient(90deg,{GOLD},{ORANGE});color:{NAVY};font-family:'IBM Plex Mono',monospace;font-size:.68rem;
+  font-weight:700;padding:7px 13px;border-radius:999px;letter-spacing:.08em;white-space:nowrap;}}
+
+.ml {{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.12em;color:{GOLD};text-transform:uppercase;margin-bottom:5px;}}
+.mt {{font-family:'Space Grotesk',sans-serif;font-size:1.22rem;font-weight:700;color:{WHITE};
+  border-left:4px solid {CYAN};padding-left:12px;margin-bottom:16px;}}
+.hero {{background:linear-gradient(135deg,rgba(16,42,76,.95),rgba(20,55,97,.96));border:1px solid rgba(251,191,36,.45);border-radius:20px;
+  padding:24px 28px;margin-bottom:18px;position:relative;box-shadow:0 14px 38px rgba(0,0,0,.26);overflow:hidden;}}
+.hero::before {{content:'';position:absolute;top:-55px;right:-60px;width:220px;height:220px;
+  background:radial-gradient(circle,rgba(34,211,238,.24),transparent 67%);pointer-events:none;}}
+.hw {{font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:800;color:{GOLD};margin-bottom:3px;letter-spacing:-.03em;}}
+.hs {{font-size:.9rem;color:{MUTED};margin-bottom:14px;}}
+.hst {{display:flex;gap:28px;flex-wrap:wrap;margin-top:8px;}}
+.hsl {{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:{MUTED};letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;}}
+.hsv {{font-family:'IBM Plex Mono',monospace;font-size:1.04rem;color:{GREEN};font-weight:700;}}
+.asmp {{background:rgba(16,42,76,.82);border:1px solid rgba(251,191,36,.30);border-left:5px solid {GOLD};border-radius:14px;
+  padding:13px 16px;font-size:.86rem;line-height:1.65;color:{WHITE};margin:12px 0;box-shadow:0 8px 26px rgba(0,0,0,.18);}}
+.asmp strong {{color:{GOLD};}}
+.ins {{background:rgba(16,42,76,.82);border:1px solid rgba(38,231,166,.32);border-left:5px solid {GREEN};border-radius:14px;
+  padding:13px 16px;font-size:.86rem;line-height:1.65;color:{WHITE};margin:12px 0;box-shadow:0 8px 26px rgba(0,0,0,.18);}}
+.ins strong {{color:{GREEN};}}
+.crok,.crbd {{display:inline-block;border-radius:999px;padding:3px 9px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;}}
+.crok {{background:rgba(38,231,166,.14);color:{GREEN};border:1px solid rgba(38,231,166,.35);}}
+.crbd {{background:rgba(251,75,107,.14);color:{RED};border:1px solid rgba(251,75,107,.35);}}
+hr.r {{border:none;border-top:1px solid rgba(43,106,159,.55);margin:22px 0;}}
+
+/* sidebar */
+[data-testid="stSidebar"] {{
+  background:linear-gradient(180deg,#08192F 0%,#0B1B33 52%,#07111F 100%)!important;
+  border-right:1px solid rgba(43,106,159,.65);
+}}
+[data-testid="stSidebar"] > div:first-child {{padding-top:1rem;}}
+[data-testid="stSidebar"] h2,[data-testid="stSidebar"] h3 {{font-family:'IBM Plex Mono',monospace;font-size:.72rem;
+  letter-spacing:.10em;color:{GOLD};text-transform:uppercase;border-bottom:1px solid rgba(43,106,159,.55);padding-bottom:7px;margin-top:16px;}}
+[data-testid="stSidebar"] label {{font-size:.82rem;color:{WHITE};font-weight:600;}}
+[data-testid="stSidebar"] small, [data-testid="stSidebar"] p {{color:{MUTED};}}
+.stSlider [data-baseweb="slider"] > div {{background:rgba(167,184,204,.25);}}
+.stSlider [role="slider"] {{background:{CYAN}!important;border:2px solid {WHITE}!important;}}
+.stNumberInput input, .stSelectbox [data-baseweb="select"] > div, .stTextInput input {{
+  background:rgba(245,247,251,.96)!important; color:#07111F!important; border-radius:10px!important; border:1px solid rgba(34,211,238,.35)!important;
+}}
+
+/* centered tabs */
+.stTabs [data-baseweb="tab-list"] {{
+  background:rgba(11,27,51,.92); border:1px solid rgba(43,106,159,.55); border-radius:14px;
+  display:flex; justify-content:center; gap:8px; padding:6px; margin-bottom:18px; box-shadow:0 8px 28px rgba(0,0,0,.20);
+}}
+.stTabs [data-baseweb="tab"] {{
+  background:transparent;color:{MUTED};font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;padding:10px 18px;border-radius:10px;border-bottom:0;
+}}
+.stTabs [aria-selected="true"] {{
+  color:{NAVY}!important;background:linear-gradient(90deg,{CYAN},{GREEN})!important;font-weight:700!important;
+}}
+
+[data-testid="stMetric"] {{background:linear-gradient(135deg,rgba(16,42,76,.95),rgba(20,55,97,.92));border:1px solid rgba(43,106,159,.65);border-radius:16px;padding:14px!important;box-shadow:0 10px 30px rgba(0,0,0,.20);}}
+[data-testid="stMetricLabel"] {{color:{MUTED}!important;font-size:.76rem!important;font-weight:600!important;}}
+[data-testid="stMetricValue"] {{color:{WHITE}!important;font-family:'Space Grotesk',sans-serif!important;font-weight:800!important;}}
+[data-testid="stDataFrame"], .stTable {{border-radius:14px;overflow:hidden;}}
+
+/* remove ugly white bands when zooming */
+[data-testid="stAppViewBlockContainer"], [data-testid="stVerticalBlock"] {{background:transparent!important;}}
+iframe {{border-radius:18px!important; background:{CBKG}!important;}}
 </style>""", unsafe_allow_html=True)
 
 
@@ -133,12 +189,12 @@ def run_gbdm(M, p, q, X, start_year=2025, end_year=2030, N0_ratio=0.01):
 def monte_carlo(params, n=500):
     """
     Matches Updated.ipynb monte_carlo_sensitive():
-      f_urban ±10%, f_affordability ±10%, p ±15%, q ±15%, X ±8%
+      f_urban ±10%, Affordability score ±10%, p ±15%, q ±15%, X ±8%
     """
     results = []
     for _ in range(n):
         fu = np.clip(np.random.normal(params["f_urban"],     params["f_urban"]*0.10),     0.05,1.0)
-        fa = np.clip(np.random.normal(params["f_affordability"], params["f_affordability"]*0.10), 0.05,1.0)
+        fa = np.clip(np.random.normal(params["Affordability score"], params["Affordability score"]*0.10), 0.05,1.0)
         M  = max(params["H_total"]*fu*params["f_suitability"]*fa, 1)
         p_ = max(np.random.normal(params["p"], params["p"]*0.15), 0.001)
         q_ = max(np.random.normal(params["q"], params["q"]*0.15), 0.001)
@@ -194,11 +250,11 @@ SEGS = pd.DataFrame({
     "House_Type"    :["Apartment","Apartment","Landed","Landed","Landed","Landed","Landed","Landed"],
     "Product"       :["Basic","Advanced","Basic","Advanced","Basic","Advanced","Basic","Advanced"],
     "f_urban"       :[0.40,0.40,0.40,0.40,0.35,0.35,0.25,0.25],
-    "f_flooring"    :[0.97,0.97,0.85,0.85,0.80,0.80,0.60,0.60],
-    "f_dwelling"    :[0.98,1.00,0.85,0.95,0.80,0.90,0.50,0.70],
-    "f_cleaning_need":[0.98,0.98,0.98,0.98,0.92,0.92,0.85,0.85],
+    "Floor compatibility score"    :[0.97,0.97,0.85,0.85,0.80,0.80,0.60,0.60],
+    "House suitability score"    :[0.98,1.00,0.85,0.95,0.80,0.90,0.50,0.70],
+    "Cleaning need score":[0.98,0.98,0.98,0.98,0.92,0.92,0.85,0.85],
     "f_suitability" :[0.93,0.95,0.71,0.79,0.59,0.66,0.25,0.36],
-    "f_affordability":[0.85,0.45,0.85,0.50,0.80,0.55,0.70,0.35],
+    "Affordability score":[0.85,0.45,0.85,0.50,0.80,0.55,0.70,0.35],
     "p"  :[0.015,0.040,0.015,0.050,0.012,0.030,0.008,0.020],
     "q"  :[0.45,0.35,0.38,0.30,0.35,0.28,0.20,0.15],
     "alpha":[-2.2,-1.2,-2.0,-0.8,-2.1,-0.9,-2.5,-1.0],
@@ -213,48 +269,47 @@ SEGS = pd.DataFrame({
 with st.sidebar:
     st.markdown(f"<div style='font-family:IBM Plex Mono,monospace;font-size:.6rem;letter-spacing:.15em;"
                 f"color:{GOLD};text-transform:uppercase;border-bottom:1px solid {BORDER};"
-                f"padding-bottom:6px;margin-bottom:12px;'>◈ CONTROL PANEL</div>", unsafe_allow_html=True)
+                f"padding-bottom:6px;margin-bottom:12px;'>◈ SCENARIO CONTROL PANEL</div>", unsafe_allow_html=True)
 
-    st.markdown("### 1. Global Market Potential")
-    total_pop = st.number_input("2030 Total Population (Million)", 1000, 10000, 8500, 50)
-    hh_size   = st.slider("Average Household Size", 1.5, 6.0, 2.75, 0.05)
+    st.markdown("### 1. World Market Size")
+    total_pop = st.number_input("World population in 2030 (million people)", 1000, 10000, 8500, 50)
+    hh_size   = st.slider("Average people per household", 1.5, 6.0, 2.75, 0.05)
     H_total   = total_pop / hh_size
     N0_ratio  = st.slider(
-        "N₀ — Initial Adoption (% of M)", 0.001, 0.050, 0.010, 0.001,
-        help="N(t₀)=M×N₀. Fraction of M already adopted at simulation start (2025). "
-             "Represents early innovators. Typical: 0.5%–2%. Source: assumed per market data.")
+        "Starting users in 2025 (% of target market)", 0.001, 0.050, 0.010, 0.001,
+        help="This is the early user base at the start of the simulation. Example: 1% means 1% of the target market already uses the product in 2025.")
 
-    st.markdown("### 2. X(t) Scenario [dP/P · dA/A · dQ/Q]")
+    st.markdown("### 2. Market Situation Changes")
     price_change = st.slider(
-        "Price Change dP/P  [+= price drops]", -0.50, 0.50, 0.05, 0.01,
-        help="Standardised: +0.05 = price falls 5%. With negative α, X(t)>1 → more adoption.")
-    ad_change    = st.slider("Advertisement dA/A", -0.50, 0.50, 0.06, 0.01)
-    tech_change  = st.slider("Technology dQ/Q",    -0.50, 0.50, 0.08, 0.01)
+        "Price movement: negative = price increase, positive = price discount", -0.50, 0.50, 0.05, 0.01,
+        help="Example: -0.10 means price increases by 10% and adoption may fall. +0.10 means price is discounted by 10% and adoption may rise.")
+    ad_change    = st.slider("Advertising change: negative = less ads, positive = more ads", -0.50, 0.50, 0.06, 0.01)
+    tech_change  = st.slider("Technology improvement: negative = weaker tech, positive = better tech",    -0.50, 0.50, 0.08, 0.01)
 
-    st.markdown("### 3. Product Pricing")
-    basic_price    = st.slider("Basic MSRP (USD)",    100, 800,  350, 10)
-    advanced_price = st.slider("Advanced MSRP (USD)", 300, 1500, 650, 10)
+    st.markdown("### 3. Product Selling Price")
+    basic_price    = st.slider("Basic model price (USD)",    100, 800,  350, 10)
+    advanced_price = st.slider("Advanced model price (USD)", 300, 1500, 650, 10)
     price_map = {"Basic":basic_price, "Advanced":advanced_price}
 
-    st.markdown("### 4. Optional Segment Override")
-    override_on = st.checkbox("Enable Manual Override", False)
-    sel_seg     = st.selectbox("Segment to Edit", SEGS["Segment"].tolist())
+    st.markdown("### 4. Advanced Segment Editor")
+    override_on = st.checkbox("Manually edit one market segment", False)
+    sel_seg     = st.selectbox("Choose segment to edit", SEGS["Segment"].tolist())
 
 edited = SEGS.copy()
 if override_on:
     idx = edited.index[edited["Segment"]==sel_seg][0]
     row = edited.loc[idx]
     with st.sidebar:
-        edited.loc[idx,"f_flooring"]       = st.slider("f_flooring",       0.10,1.00,float(row["f_flooring"]),0.01)
-        edited.loc[idx,"f_dwelling"]       = st.slider("f_dwelling",       0.10,1.00,float(row["f_dwelling"]),0.01)
-        edited.loc[idx,"f_cleaning_need"]  = st.slider("f_cleaning_need",  0.10,1.00,float(row["f_cleaning_need"]),0.01)
-        edited.loc[idx,"f_suitability"]    = round(edited.loc[idx,"f_flooring"]*edited.loc[idx,"f_dwelling"]*edited.loc[idx,"f_cleaning_need"],4)
-        edited.loc[idx,"f_affordability"]  = st.slider("f_affordability",  0.10,1.00,float(row["f_affordability"]),0.01)
-        edited.loc[idx,"p"]     = st.slider("p — Innovation",    0.001,0.100,float(row["p"]),0.001)
-        edited.loc[idx,"q"]     = st.slider("q — Imitation",     0.050,0.800,float(row["q"]),0.010)
-        edited.loc[idx,"alpha"] = st.slider("α — Price Elast.", -5.0,  1.0, float(row["alpha"]),0.1)
-        edited.loc[idx,"beta"]  = st.slider("β — Ad Effect",    0.0,   3.0, float(row["beta"]),0.1)
-        edited.loc[idx,"gamma"] = st.slider("γ — Tech Quality", 0.0,   3.0, float(row["gamma"]),0.1)
+        edited.loc[idx,"Floor compatibility score"]       = st.slider("Floor compatibility score",       0.10,1.00,float(row["Floor compatibility score"]),0.01)
+        edited.loc[idx,"House suitability score"]       = st.slider("House suitability score",       0.10,1.00,float(row["House suitability score"]),0.01)
+        edited.loc[idx,"Cleaning need score"]  = st.slider("Cleaning need score",  0.10,1.00,float(row["Cleaning need score"]),0.01)
+        edited.loc[idx,"f_suitability"]    = round(edited.loc[idx,"Floor compatibility score"]*edited.loc[idx,"House suitability score"]*edited.loc[idx,"Cleaning need score"],4)
+        edited.loc[idx,"Affordability score"]  = st.slider("Affordability score",  0.10,1.00,float(row["Affordability score"]),0.01)
+        edited.loc[idx,"p"]     = st.slider("Innovation effect p: early buyer influence",    0.001,0.100,float(row["p"]),0.001)
+        edited.loc[idx,"q"]     = st.slider("Imitation effect q: word-of-mouth influence",     0.050,0.800,float(row["q"]),0.010)
+        edited.loc[idx,"alpha"] = st.slider("Price sensitivity α", -5.0,  1.0, float(row["alpha"]),0.1)
+        edited.loc[idx,"beta"]  = st.slider("Advertising influence β",    0.0,   3.0, float(row["beta"]),0.1)
+        edited.loc[idx,"gamma"] = st.slider("Technology attractiveness γ", 0.0,   3.0, float(row["gamma"]),0.1)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -262,7 +317,7 @@ if override_on:
 # ══════════════════════════════════════════════════════════════════════════════
 all_res, seg_sum = [], []
 for _, s in edited.iterrows():
-    M = H_total * s["f_urban"] * s["f_suitability"] * s["f_affordability"]
+    M = H_total * s["f_urban"] * s["f_suitability"] * s["Affordability score"]
     X = x_factor(s["alpha"],s["beta"],s["gamma"],price_change,ad_change,tech_change)
     r = run_gbdm(M,s["p"],s["q"],X,N0_ratio=N0_ratio)
     r["Segment"]          = s["Segment"]
@@ -277,7 +332,7 @@ for _, s in edited.iterrows():
     all_res.append(r)
     seg_sum.append({"Segment":s["Segment"],"Area":s["Area"],"Product":s["Product"],
                     "f_urban":s["f_urban"],"f_suitability":s["f_suitability"],
-                    "f_affordability":s["f_affordability"],"p":s["p"],"q":s["q"],
+                    "Affordability score":s["Affordability score"],"p":s["p"],"q":s["q"],
                     "alpha":s["alpha"],"beta":s["beta"],"gamma":s["gamma"],"M":M,"X_t":X,
                     "ad_change":ad_change,"tech_change":tech_change})
 
@@ -313,9 +368,9 @@ winner_share = best["Cumulative_Adopters"]/total_adopt*100
 st.markdown(f"""
 <div class="corp-hdr">
   <div>
-    <div class="sub">CONFIDENTIAL · MIMMC2026 Q3 · BOARD INTELLIGENCE</div>
-    <h1>2030 Market Leadership Forecast Dashboard</h1>
-    <div class="sub">GBDM · Real AHP (CR={ahp_CR:.3f} ✓) · Monte Carlo · 8 Segments · Competitor War</div>
+    <div class="sub">MIMMC2026 Q3 · THE FUTURE OF CLEAN · STRATEGIC MARKET SIMULATOR</div>
+    <h1>2030 Robot Vacuum Market Leader Dashboard</h1>
+    <div class="sub">Adoption Forecast · Market Value · Price Strategy · Risk Simulation · Competitor War</div>
   </div>
   <div class="bdg">LIVE MODEL</div>
 </div>""", unsafe_allow_html=True)
@@ -325,9 +380,9 @@ st.markdown(f"""
 # TABS
 # ══════════════════════════════════════════════════════════════════════════════
 tab1, tab2, tab3 = st.tabs([
-    "TAB 1 — GBDM Results & Final Recommendation",
-    "TAB 2 — Analysis Hub  (MC · Sensitivity · AHP · WCPI)",
-    "TAB 3 — Competitor War",
+    "Forecast & Recommendation",
+    "Analysis & Model Validation",
+    "Competitor War Game",
 ])
 
 
@@ -337,12 +392,12 @@ tab1, tab2, tab3 = st.tabs([
 with tab1:
 
     # Assumptions
-    st.markdown(f"""<div class="asmp"><strong>ASSUMPTIONS:</strong>
-    H_total = {total_pop}M ÷ {hh_size:.2f} = <strong>{H_total:,.1f}M households</strong> &nbsp;|&nbsp;
-    N₀ = {N0_ratio*100:.1f}% of M (early innovators, 2025) &nbsp;|&nbsp;
-    dt = 1/12 yr (monthly Euler) &nbsp;|&nbsp;
-    Price convention: +dP/P → price falls → adoption rises &nbsp;|&nbsp;
-    f_suitability = PDF-stated values; Seg 7 = 0.25
+    st.markdown(f"""<div class="asmp"><strong>MODEL SETTINGS IN SIMPLE WORDS:</strong><br>
+    We convert the 2030 world population into households: {total_pop}M people ÷ {hh_size:.2f} people per household =
+    <strong>{H_total:,.1f}M possible households</strong>. The simulation starts with
+    <strong>{N0_ratio*100:.1f}% early users</strong> in 2025. The model updates monthly until 2030.
+    For price movement, <strong>positive means discount</strong> and <strong>negative means price increase</strong>.
+    Segment suitability values represent how suitable each housing group is for robot vacuum adoption.
     </div>""", unsafe_allow_html=True)
 
     # KPIs
@@ -379,7 +434,7 @@ with tab1:
         st.markdown('<div class="ml">2030 Adoption Ranking</div>', unsafe_allow_html=True)
         s30s = s30.sort_values("Cumulative_Adopters",ascending=True)
         fg = go.Figure(go.Bar(x=s30s["Cumulative_Adopters"],y=s30s["Segment"],orientation="h",
-            marker_color=[GREEN if s==best["Segment"] else BORDER for s in s30s["Segment"]],
+            marker_color=[GREEN if s==best["Segment"] else "#2B6A9F" for s in s30s["Segment"]],
             text=[f"{v:.2f}M" for v in s30s["Cumulative_Adopters"]],
             textposition="outside",textfont=dict(color=WHITE,size=10)))
         fg.update_layout(**PLY,title="Cumulative Adoption",xaxis_title="M",height=310,showlegend=False)
@@ -388,7 +443,7 @@ with tab1:
         st.markdown('<div class="ml">2030 Annual Revenue ($B)</div>', unsafe_allow_html=True)
         s30r = s30.sort_values("Annual_Rev_B",ascending=True)
         fg2 = go.Figure(go.Bar(x=s30r["Annual_Rev_B"],y=s30r["Segment"],orientation="h",
-            marker_color=[GOLD if s==best["Segment"] else BORDER for s in s30r["Segment"]],
+            marker_color=[GOLD if s==best["Segment"] else "#2B6A9F" for s in s30r["Segment"]],
             text=[f"${v:.2f}B" for v in s30r["Annual_Rev_B"]],
             textposition="outside",textfont=dict(color=WHITE,size=10)))
         fg2.update_layout(**PLY,title="Annual Revenue",xaxis_title="$B",height=310,showlegend=False)
@@ -479,7 +534,7 @@ with tab2:
     # 2A Monte Carlo
     with s2abc:
         st.markdown(f"""<div class="asmp"><strong>METHOD (Updated.ipynb monte_carlo_sensitive):</strong>
-        Perturbs: f_urban ±10% (most sensitive), f_affordability ±10%, p ±15%, q ±15%, X(t) ±8%.
+        Perturbs: f_urban ±10% (most sensitive), Affordability score ±10%, p ±15%, q ±15%, X(t) ±8%.
         Normal distribution, clipped to [0.05, 1.0] for f-factors.
         </div>""", unsafe_allow_html=True)
 
@@ -488,7 +543,7 @@ with tab2:
         mr = edited[edited["Segment"]==mc_seg].iloc[0]
         mX = x_factor(mr["alpha"],mr["beta"],mr["gamma"],price_change,ad_change,tech_change)
         mc_p = {"H_total":H_total,"f_urban":mr["f_urban"],"f_suitability":mr["f_suitability"],
-                "f_affordability":mr["f_affordability"],"p":mr["p"],"q":mr["q"],"X":mX}
+                "Affordability score":mr["Affordability score"],"p":mr["p"],"q":mr["q"],"X":mX}
         with st.spinner(f"Running {mc_n:,} simulations…"):
             mcr = monte_carlo(mc_p, n=mc_n)
         if len(mcr)==0: st.error("No valid outcomes."); st.stop()
@@ -515,22 +570,22 @@ with tab2:
     # -- 2B Sensitivity --------------------------------------------------
         st.markdown("""<div class="asmp">
         <strong>METHOD:</strong> One-at-a-time +10% shock on each parameter.
-        For f_flooring, f_dwelling, f_cleaning_need: when perturbed, f_suitability is
-        recomputed as f_flooring x f_dwelling x f_cleaning_need before recalculating M.
+        For Floor compatibility score, House suitability score, Cleaning need score: when perturbed, f_suitability is
+        recomputed as Floor compatibility score x House suitability score x Cleaning need score before recalculating M.
         This reveals the individual leverage of each suitability sub-component.
         </div>""", unsafe_allow_html=True)
 
         ss = st.selectbox("Segment", edited["Segment"].tolist(), key="sens")
         br = edited[edited["Segment"]==ss].iloc[0]
 
-        bM  = H_total * br["f_urban"] * br["f_suitability"] * br["f_affordability"]
+        bM  = H_total * br["f_urban"] * br["f_suitability"] * br["Affordability score"]
         bX  = x_factor(br["alpha"],br["beta"],br["gamma"],price_change,ad_change,tech_change)
         b2  = run_gbdm(bM, br["p"], br["q"], bX, N0_ratio=N0_ratio)
         b30 = b2.loc[b2["Year"]==2030,"Cumulative_Adopters"].iloc[0]
 
         all_params = [
-            "f_flooring", "f_dwelling", "f_cleaning_need",
-            "f_affordability", "f_urban",
+            "Floor compatibility score", "House suitability score", "Cleaning need score",
+            "Affordability score", "f_urban",
             "p", "q", "alpha", "beta", "gamma",
             "price_change", "ad_change", "tech_change",
         ]
@@ -540,8 +595,8 @@ with tab2:
             nb2 = br.copy()
             np_ = price_change; na_ = ad_change; nt_ = tech_change
 
-            if pm in ["f_flooring","f_dwelling","f_cleaning_need",
-                      "f_affordability","f_urban","p","q","beta","gamma"]:
+            if pm in ["Floor compatibility score","House suitability score","Cleaning need score",
+                      "Affordability score","f_urban","p","q","beta","gamma"]:
                 nb2[pm] = nb2[pm] * 1.10
             elif pm == "alpha":        nb2[pm] = nb2[pm] * 1.10
             elif pm == "price_change": np_ = price_change * 1.10
@@ -549,12 +604,12 @@ with tab2:
             elif pm == "tech_change":  nt_ = tech_change  * 1.10
 
             # Recompute f_suitability from components when a sub-factor is perturbed
-            if pm in ["f_flooring","f_dwelling","f_cleaning_need"]:
-                new_suit = nb2["f_flooring"] * nb2["f_dwelling"] * nb2["f_cleaning_need"]
+            if pm in ["Floor compatibility score","House suitability score","Cleaning need score"]:
+                new_suit = nb2["Floor compatibility score"] * nb2["House suitability score"] * nb2["Cleaning need score"]
             else:
                 new_suit = nb2["f_suitability"]
 
-            nM2 = H_total * nb2["f_urban"] * new_suit * nb2["f_affordability"]
+            nM2 = H_total * nb2["f_urban"] * new_suit * nb2["Affordability score"]
             nX2 = x_factor(nb2["alpha"],nb2["beta"],nb2["gamma"],np_,na_,nt_)
             nR2 = run_gbdm(nM2, nb2["p"], nb2["q"], nX2, N0_ratio=N0_ratio)
             n30 = nR2.loc[nR2["Year"]==2030,"Cumulative_Adopters"].iloc[0]
@@ -600,7 +655,7 @@ with tab2:
         st.markdown('<hr class="r"><div class="ml">AHP Product Ranking</div>', unsafe_allow_html=True)
         prs=pr.sort_values("AHP_Score",ascending=True)
         far=go.Figure(go.Bar(x=prs["AHP_Score"],y=prs["Segment"],orientation="h",
-            marker_color=[GREEN if s==best["Segment"] else BORDER for s in prs["Segment"]],
+            marker_color=[GREEN if s==best["Segment"] else "#2B6A9F" for s in prs["Segment"]],
             text=[f"{v:.4f}" for v in prs["AHP_Score"]],
             textposition="outside",textfont=dict(color=WHITE,size=10)))
         far.update_layout(**PLY,title="Final AHP Priority Score",xaxis_title="Score",height=360,showlegend=False)
@@ -645,7 +700,7 @@ with tab2:
 # TAB 3: COMPETITOR WAR
 # ══════════════════════════════════════════════════════════════════════════════
 with tab3:
-    st.markdown('<div class="ml">Tab 3</div>', unsafe_allow_html=True)
+    st.markdown('<div class="ml">Interactive Strategy Game</div>', unsafe_allow_html=True)
     st.markdown('<div class="mt">Competitor War — World Diffusion Strategy Game (2024–2030)</div>', unsafe_allow_html=True)
     st.markdown(f"""<div class="asmp">
     <strong>HOW TO PLAY:</strong> Up to 3 companies compete to dominate the 2030 global robot vacuum market.
