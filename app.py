@@ -568,11 +568,11 @@ if override_on:
         edited.loc[idx,"Cleaning need score"]  = st.slider("Cleaning need score",  0.10,1.00,float(row["Cleaning need score"]),0.01)
         edited.loc[idx,"f_suitability"]    = round(edited.loc[idx,"Floor compatibility score"]*edited.loc[idx,"House suitability score"]*edited.loc[idx,"Cleaning need score"],4)
         edited.loc[idx,"Affordability score"]  = st.slider("Affordability score",  0.10,1.00,float(row["Affordability score"]),0.01)
-        edited.loc[idx,"p"]     = st.slider("Innovation effect p: early buyer influence",    0.001,0.100,float(row["p"]),0.001)
-        edited.loc[idx,"q"]     = st.slider("Imitation effect q: word-of-mouth influence",     0.050,0.800,float(row["q"]),0.010)
-        edited.loc[idx,"alpha"] = st.slider("Price sensitivity α", -5.0,  1.0, float(row["alpha"]),0.1)
-        edited.loc[idx,"beta"]  = st.slider("Advertising influence β",    0.0,   3.0, float(row["beta"]),0.1)
-        edited.loc[idx,"gamma"] = st.slider("Technology attractiveness γ", 0.0,   3.0, float(row["gamma"]),0.1)
+        edited.loc[idx,"p"]     = st.slider("Innovation effect",    0.001,0.100,float(row["p"]),0.001)
+        edited.loc[idx,"q"]     = st.slider("Imitation effect",     0.050,0.800,float(row["q"]),0.010)
+        edited.loc[idx,"alpha"] = st.slider("Price sensitivity", -5.0,  1.0, float(row["alpha"]),0.1)
+        edited.loc[idx,"beta"]  = st.slider("Advertising influence",    -1.0,   3.0, float(row["beta"]),0.1)
+        edited.loc[idx,"gamma"] = st.slider("Technology attractiveness", 0.0,   3.0, float(row["gamma"]),0.1)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
