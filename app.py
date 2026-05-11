@@ -33,21 +33,36 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Design tokens: clean-tech premium theme ───────────────────────────────────
-NAVY   = "#DCEEFF"   # main background (light blue)
-SLATE  = "#BFDFFF"   # sidebar / cards
-PANEL  = "#F4F9FF"   # panels
-BORDER = "#7FB3E6"
-PANEL2 = "#143761"   # lighter panel
-CYAN   = "#22D3EE"
-GREEN  = "#00BFA6"
-GOLD   = "#FFB703"
+# ── Design tokens: modern clean-tech light theme ────────────────────────────
+
+NAVY   = "#EDF6FF"   # overall background
+SLATE  = "#D9ECFF"   # sidebar/cards
+PANEL  = "#FFFFFF"   # white panel
+PANEL2 = "#F4F9FF"
+
+BORDER = "#B6D4F0"
+
+CYAN   = "#00B8D9"
+GREEN  = "#00C48C"
+GOLD   = "#FFB020"
 RED    = "#FF5A5F"
-ORANGE = "#FB923C"
-WHITE  = "#102A43"   # IMPORTANT: dark text now
-MUTED  = "#486581"
-CBKG   = "#EAF4FF"
-SEG_C = ["#22D3EE", "#26E7A6", "#FBBF24", "#FB923C", "#A78BFA", "#F472B6", "#60A5FA", "#34D399"]
+ORANGE = "#FF8A3D"
+
+WHITE  = "#102A43"   # MAIN TEXT COLOR
+MUTED  = "#5B708B"   # secondary text
+
+CBKG   = "#F7FBFF"
+
+SEG_C = [
+    "#00B8D9",
+    "#00C48C",
+    "#FFB020",
+    "#FF8A3D",
+    "#7B61FF",
+    "#EC4899",
+    "#3B82F6",
+    "#14B8A6"
+]
 PLY = dict(
     paper_bgcolor=CBKG, plot_bgcolor=CBKG,
     font=dict(family="Inter, sans-serif",color=WHITE,size=11),
@@ -67,12 +82,11 @@ st.markdown(f"""<style>
 
 :root {{ --app-bg:{NAVY}; --panel:{PANEL}; --panel2:{PANEL2}; --border:{BORDER}; --text:{WHITE}; --muted:{MUTED}; --gold:{GOLD}; --cyan:{CYAN}; --green:{GREEN}; }}
 html, body, .stApp, [data-testid="stAppViewContainer"] {{
-  background:
-    radial-gradient(circle at 18% 8%, rgba(34,211,238,.16), transparent 28%),
-    radial-gradient(circle at 92% 0%, rgba(251,191,36,.12), transparent 24%),
-    linear-gradient(135deg, #07111F 0%, #0B1B33 48%, #06101D 100%) !important;
-  color:#F5FBFF !important;
-text-shadow:0 0 12px rgba(0,200,255,0.35);
+background:
+  radial-gradient(circle at top left, rgba(0,184,217,.10), transparent 25%),
+  radial-gradient(circle at top right, rgba(255,176,32,.10), transparent 20%),
+  linear-gradient(135deg, #EDF6FF 0%, #F7FBFF 50%, #EAF4FF 100%) !important;
+  color:#102A43 !important;
   font-family:'Inter', sans-serif;
 }}
 #MainMenu, footer, header {{ visibility:hidden; }}
@@ -119,13 +133,13 @@ hr.r {{border:none;border-top:1px solid rgba(43,106,159,.55);margin:22px 0;}}
 
 /* sidebar */
 [data-testid="stSidebar"] {{
-  background:linear-gradient(180deg,#08192F 0%,#0B1B33 52%,#07111F 100%)!important;
+  background:linear-gradient(180deg,#D9ECFF 0%,#EDF6FF 100%)!important;
   border-right:1px solid rgba(43,106,159,.65);
 }}
 [data-testid="stSidebar"] > div:first-child {{padding-top:1rem;}}
 [data-testid="stSidebar"] h2,[data-testid="stSidebar"] h3 {{font-family:'IBM Plex Mono',monospace;font-size:.72rem;
   letter-spacing:.10em;color:{GOLD};text-transform:uppercase;border-bottom:1px solid rgba(43,106,159,.55);padding-bottom:7px;margin-top:16px;}}
-[data-testid="stSidebar"] label {{font-size:.82rem;color:{WHITE};font-weight:600;}}
+[data-testid="stSidebar"] label {{font-size:.82rem;color:#102A43;font-weight:600;}}
 [data-testid="stSidebar"] small, [data-testid="stSidebar"] p {{color:{MUTED};}}
 .stSlider [data-baseweb="slider"] > div {{background:rgba(167,184,204,.25);}}
 .stSlider [role="slider"] {{background:{CYAN}!important;border:2px solid {WHITE}!important;}}
