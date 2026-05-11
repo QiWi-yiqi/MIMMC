@@ -33,143 +33,391 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Design tokens: modern clean-tech light theme ────────────────────────────
+# ── Design tokens: modern clean-tech light theme ──────────────────────────────
+# IMPORTANT: WHITE is used as the main text color in the existing code.
+# In this light theme, WHITE = dark navy text so every word is visible.
+NAVY   = "#EEF6FF"   # main page background
+SLATE  = "#D9ECFF"   # sidebar / soft blue surfaces
+PANEL  = "#FFFFFF"   # cards and information boxes
+PANEL2 = "#F4F9FF"   # secondary cards
+BORDER = "#A8CFF0"   # soft blue border
+CYAN   = "#00A6D6"   # modern blue accent
+GREEN  = "#00A878"   # success green
+GOLD   = "#F59E0B"   # warm highlight
+ORANGE = "#F97316"   # button orange
+RED    = "#EF4444"   # warning red
+WHITE  = "#102A43"   # main readable text color
+MUTED  = "#52667A"   # secondary readable text
+CBKG   = "#F7FBFF"   # chart background
 
-NAVY   = "#EDF6FF"   # overall background
-SLATE  = "#D9ECFF"   # sidebar/cards
-PANEL  = "#FFFFFF"   # white panel
-PANEL2 = "#F4F9FF"
+SEG_C = ["#00A6D6", "#00A878", "#F59E0B", "#F97316", "#7B61FF", "#EC4899", "#3B82F6", "#14B8A6"]
 
-BORDER = "#B6D4F0"
-
-CYAN   = "#00B8D9"
-GREEN  = "#00C48C"
-GOLD   = "#FFB020"
-RED    = "#FF5A5F"
-ORANGE = "#FF8A3D"
-
-WHITE  = "#102A43"   # MAIN TEXT COLOR
-MUTED  = "#5B708B"   # secondary text
-
-CBKG   = "#F7FBFF"
-
-SEG_C = [
-    "#00B8D9",
-    "#00C48C",
-    "#FFB020",
-    "#FF8A3D",
-    "#7B61FF",
-    "#EC4899",
-    "#3B82F6",
-    "#14B8A6"
-]
 PLY = dict(
-    paper_bgcolor=CBKG, plot_bgcolor=CBKG,
-    font=dict(family="Inter, sans-serif",color=WHITE,size=11),
-    title_font=dict(family="Space Grotesk, sans-serif",color=WHITE,size=15),
-    legend=dict(bgcolor="rgba(10,22,40,.8)",bordercolor=BORDER,borderwidth=1,
-                font=dict(color=WHITE,size=10)),
-    xaxis=dict(gridcolor="rgba(30,58,95,.5)",linecolor=BORDER,
-               tickfont=dict(color=MUTED),title_font=dict(color=MUTED),zeroline=False),
-    yaxis=dict(gridcolor="rgba(30,58,95,.5)",linecolor=BORDER,
-               tickfont=dict(color=MUTED),title_font=dict(color=MUTED),zeroline=False),
-    margin=dict(l=50,r=30,t=50,b=40),
+    paper_bgcolor=CBKG,
+    plot_bgcolor=CBKG,
+    font=dict(family="Inter, sans-serif", color=WHITE, size=12),
+    title_font=dict(family="Space Grotesk, sans-serif", color=WHITE, size=16),
+    legend=dict(
+        bgcolor="rgba(255,255,255,.92)",
+        bordercolor=BORDER,
+        borderwidth=1,
+        font=dict(color=WHITE, size=10),
+    ),
+    xaxis=dict(
+        gridcolor="rgba(168,207,240,.65)",
+        linecolor=BORDER,
+        tickfont=dict(color=MUTED),
+        title_font=dict(color=MUTED),
+        zeroline=False,
+    ),
+    yaxis=dict(
+        gridcolor="rgba(168,207,240,.65)",
+        linecolor=BORDER,
+        tickfont=dict(color=MUTED),
+        title_font=dict(color=MUTED),
+        zeroline=False,
+    ),
+    margin=dict(l=50, r=30, t=50, b=40),
 )
 
-# ── CSS ──────────────────────────────────────────────────────────────────────
+# ── CSS: fully visible light theme ───────────────────────────────────────────
 st.markdown(f"""<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
-:root {{ --app-bg:{NAVY}; --panel:{PANEL}; --panel2:{PANEL2}; --border:{BORDER}; --text:{WHITE}; --muted:{MUTED}; --gold:{GOLD}; --cyan:{CYAN}; --green:{GREEN}; }}
+:root {{
+  --bg:{NAVY};
+  --bg2:{CBKG};
+  --panel:{PANEL};
+  --panel2:{PANEL2};
+  --border:{BORDER};
+  --text:{WHITE};
+  --muted:{MUTED};
+  --cyan:{CYAN};
+  --green:{GREEN};
+  --gold:{GOLD};
+  --orange:{ORANGE};
+  --red:{RED};
+}}
+
 html, body, .stApp, [data-testid="stAppViewContainer"] {{
-background:
-  radial-gradient(circle at top left, rgba(0,184,217,.10), transparent 25%),
-  radial-gradient(circle at top right, rgba(255,176,32,.10), transparent 20%),
-  linear-gradient(135deg, #EDF6FF 0%, #F7FBFF 50%, #EAF4FF 100%) !important;
-  color:#102A43 !important;
+  background:
+    radial-gradient(circle at top left, rgba(0,166,214,.13), transparent 26%),
+    radial-gradient(circle at top right, rgba(245,158,11,.10), transparent 22%),
+    linear-gradient(135deg, #EEF6FF 0%, #F8FBFF 50%, #EAF4FF 100%) !important;
+  color:var(--text) !important;
   font-family:'Inter', sans-serif;
 }}
+
 #MainMenu, footer, header {{ visibility:hidden; }}
+
 .block-container {{
-  padding-top:1.05rem!important; padding-left:2.2rem!important; padding-right:2.2rem!important;
+  padding-top:1rem!important;
+  padding-left:2rem!important;
+  padding-right:2rem!important;
   max-width:1500px!important;
 }}
-section.main > div {{ background:transparent!important; }}
 
-/* top header */
-.corp-hdr {{
-  background:linear-gradient(135deg, rgba(20,55,97,.96), rgba(8,25,47,.98));
-  border:1px solid rgba(34,211,238,.28); border-bottom:3px solid {GOLD};
-  box-shadow:0 14px 40px rgba(0,0,0,.28); border-radius:18px;
-  padding:20px 28px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; gap:16px;
+section.main > div,
+[data-testid="stAppViewBlockContainer"],
+[data-testid="stVerticalBlock"] {{
+  background:transparent!important;
 }}
-.corp-hdr h1 {{font-family:'Space Grotesk',sans-serif;font-size:1.75rem;font-weight:700;color:{WHITE};margin:0;letter-spacing:-.03em;}}
-.corp-hdr .sub {{font-size:.72rem;color:{MUTED};margin-top:5px;font-family:'IBM Plex Mono',monospace;letter-spacing:.04em;}}
-.corp-hdr .bdg {{background:linear-gradient(90deg,{GOLD},{ORANGE});color:{NAVY};font-family:'IBM Plex Mono',monospace;font-size:.68rem;
-  font-weight:700;padding:7px 13px;border-radius:999px;letter-spacing:.08em;white-space:nowrap;}}
 
-.ml {{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.12em;color:{GOLD};text-transform:uppercase;margin-bottom:5px;}}
-.mt {{font-family:'Space Grotesk',sans-serif;font-size:1.22rem;font-weight:700;color:{WHITE};
-  border-left:4px solid {CYAN};padding-left:12px;margin-bottom:16px;}}
-.hero {{background:linear-gradient(135deg,rgba(16,42,76,.95),rgba(20,55,97,.96));border:1px solid rgba(251,191,36,.45);border-radius:20px;
-  padding:24px 28px;margin-bottom:18px;position:relative;box-shadow:0 14px 38px rgba(0,0,0,.26);overflow:hidden;}}
-.hero::before {{content:'';position:absolute;top:-55px;right:-60px;width:220px;height:220px;
-  background:radial-gradient(circle,rgba(34,211,238,.24),transparent 67%);pointer-events:none;}}
-.hw {{font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:800;color:{GOLD};margin-bottom:3px;letter-spacing:-.03em;}}
-.hs {{font-size:.9rem;color:{MUTED};margin-bottom:14px;}}
+/* Make default Streamlit text readable */
+p, span, label, div, h1, h2, h3, h4, h5, h6 {{
+  color:var(--text);
+}}
+
+/* Top header */
+.corp-hdr {{
+  background:linear-gradient(135deg,#FFFFFF,#F4F9FF);
+  border:1px solid var(--border);
+  border-bottom:4px solid var(--gold);
+  border-radius:20px;
+  padding:22px 28px;
+  margin-bottom:18px;
+  box-shadow:0 10px 30px rgba(70,120,180,.14);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}}
+.corp-hdr h1 {{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:2rem;
+  font-weight:800;
+  color:var(--text)!important;
+  margin:0;
+  letter-spacing:-.03em;
+}}
+.corp-hdr .sub {{
+  font-size:.78rem;
+  color:var(--muted)!important;
+  margin-top:5px;
+  font-family:'IBM Plex Mono',monospace;
+  letter-spacing:.04em;
+}}
+.corp-hdr .bdg {{
+  background:linear-gradient(90deg,var(--gold),var(--orange));
+  color:#FFFFFF!important;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem;
+  font-weight:800;
+  padding:8px 15px;
+  border-radius:999px;
+  letter-spacing:.08em;
+  white-space:nowrap;
+}}
+
+/* Section labels */
+.ml {{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem;
+  letter-spacing:.10em;
+  color:var(--gold)!important;
+  text-transform:uppercase;
+  margin-bottom:5px;
+  font-weight:700;
+}}
+.mt {{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:1.3rem;
+  font-weight:800;
+  color:var(--text)!important;
+  border-left:4px solid var(--cyan);
+  padding-left:12px;
+  margin-bottom:16px;
+}}
+
+/* Hero recommendation card */
+.hero {{
+  background:linear-gradient(135deg,#FFFFFF,#F4F9FF);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:24px 28px;
+  margin-bottom:18px;
+  position:relative;
+  box-shadow:0 12px 32px rgba(60,120,180,.13);
+  overflow:hidden;
+}}
+.hero::before {{
+  content:'';
+  position:absolute;
+  top:-55px;
+  right:-60px;
+  width:220px;
+  height:220px;
+  background:radial-gradient(circle,rgba(0,166,214,.16),transparent 67%);
+  pointer-events:none;
+}}
+.hw {{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:2rem;
+  font-weight:800;
+  color:var(--gold)!important;
+  margin-bottom:3px;
+  letter-spacing:-.03em;
+}}
+.hs {{font-size:.92rem;color:var(--muted)!important;margin-bottom:14px;}}
 .hst {{display:flex;gap:28px;flex-wrap:wrap;margin-top:8px;}}
-.hsl {{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:{MUTED};letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;}}
-.hsv {{font-family:'IBM Plex Mono',monospace;font-size:1.04rem;color:{GREEN};font-weight:700;}}
-.asmp {{background:rgba(16,42,76,.82);border:1px solid rgba(251,191,36,.30);border-left:5px solid {GOLD};border-radius:14px;
-  padding:13px 16px;font-size:.86rem;line-height:1.65;color:{WHITE};margin:12px 0;box-shadow:0 8px 26px rgba(0,0,0,.18);}}
-.asmp strong {{color:{GOLD};}}
-.ins {{background:rgba(16,42,76,.82);border:1px solid rgba(38,231,166,.32);border-left:5px solid {GREEN};border-radius:14px;
-  padding:13px 16px;font-size:.86rem;line-height:1.65;color:{WHITE};margin:12px 0;box-shadow:0 8px 26px rgba(0,0,0,.18);}}
-.ins strong {{color:{GREEN};}}
-.crok,.crbd {{display:inline-block;border-radius:999px;padding:3px 9px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;}}
-.crok {{background:rgba(38,231,166,.14);color:{GREEN};border:1px solid rgba(38,231,166,.35);}}
-.crbd {{background:rgba(251,75,107,.14);color:{RED};border:1px solid rgba(251,75,107,.35);}}
-hr.r {{border:none;border-top:1px solid rgba(43,106,159,.55);margin:22px 0;}}
+.hsl {{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.65rem;
+  color:var(--muted)!important;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin-bottom:2px;
+}}
+.hsv {{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:1.05rem;
+  color:var(--green)!important;
+  font-weight:800;
+}}
 
-/* sidebar */
+/* Info boxes */
+.asmp, .ins {{
+  background:#FFFFFF;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px 16px;
+  font-size:.88rem;
+  line-height:1.7;
+  color:var(--text)!important;
+  margin:12px 0;
+  box-shadow:0 6px 18px rgba(60,120,180,.09);
+}}
+.asmp {{border-left:5px solid var(--gold);}}
+.ins {{border-left:5px solid var(--green);}}
+.asmp strong {{color:var(--gold)!important;}}
+.ins strong {{color:var(--green)!important;}}
+
+.crok,.crbd {{
+  display:inline-block;
+  border-radius:999px;
+  padding:3px 9px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.68rem;
+  font-weight:700;
+}}
+.crok {{background:rgba(0,168,120,.12);color:var(--green)!important;border:1px solid rgba(0,168,120,.35);}}
+.crbd {{background:rgba(239,68,68,.12);color:var(--red)!important;border:1px solid rgba(239,68,68,.35);}}
+
+hr.r {{border:none;border-top:1px solid var(--border);margin:22px 0;}}
+
+/* Sidebar */
 [data-testid="stSidebar"] {{
-  background:linear-gradient(180deg,#D9ECFF 0%,#EDF6FF 100%)!important;
-  border-right:1px solid rgba(43,106,159,.65);
+  background:linear-gradient(180deg,#D9ECFF 0%,#EEF6FF 100%)!important;
+  border-right:1px solid var(--border);
 }}
 [data-testid="stSidebar"] > div:first-child {{padding-top:1rem;}}
-[data-testid="stSidebar"] h2,[data-testid="stSidebar"] h3 {{font-family:'IBM Plex Mono',monospace;font-size:.72rem;
-  letter-spacing:.10em;color:{GOLD};text-transform:uppercase;border-bottom:1px solid rgba(43,106,159,.55);padding-bottom:7px;margin-top:16px;}}
-[data-testid="stSidebar"] label {{font-size:.82rem;color:#102A43;font-weight:600;}}
-[data-testid="stSidebar"] small, [data-testid="stSidebar"] p {{color:{MUTED};}}
-.stSlider [data-baseweb="slider"] > div {{background:rgba(167,184,204,.25);}}
-.stSlider [role="slider"] {{background:{CYAN}!important;border:2px solid {WHITE}!important;}}
-.stNumberInput input, .stSelectbox [data-baseweb="select"] > div, .stTextInput input {{
-  background:rgba(245,247,251,.96)!important; color:#07111F!important; border-radius:10px!important; border:1px solid rgba(34,211,238,.35)!important;
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.74rem;
+  letter-spacing:.09em;
+  color:var(--gold)!important;
+  text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+  padding-bottom:7px;
+  margin-top:16px;
+  font-weight:800;
+}}
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] div {{
+  color:var(--text)!important;
+}}
+[data-testid="stSidebar"] small {{color:var(--muted)!important;}}
+
+/* Inputs */
+.stNumberInput input,
+.stTextInput input,
+.stSelectbox [data-baseweb="select"] > div {{
+  background:#FFFFFF!important;
+  color:var(--text)!important;
+  border-radius:10px!important;
+  border:1px solid var(--border)!important;
+}}
+.stNumberInput input:focus,
+.stTextInput input:focus {{
+  border:1px solid var(--cyan)!important;
+  box-shadow:0 0 0 2px rgba(0,166,214,.16)!important;
+}}
+.stSlider [data-baseweb="slider"] > div {{background:rgba(168,207,240,.55)!important;}}
+.stSlider [role="slider"] {{
+  background:var(--cyan)!important;
+  border:2px solid #FFFFFF!important;
 }}
 
-/* centered tabs */
+/* Tabs */
 .stTabs [data-baseweb="tab-list"] {{
-  background:rgba(11,27,51,.92); border:1px solid rgba(43,106,159,.55); border-radius:14px;
-  display:flex; justify-content:center; gap:8px; padding:6px; margin-bottom:18px; box-shadow:0 8px 28px rgba(0,0,0,.20);
+  background:#FFFFFF;
+  border:1px solid var(--border);
+  border-radius:15px;
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  padding:6px;
+  margin-bottom:18px;
+  box-shadow:0 6px 20px rgba(60,120,180,.12);
 }}
 .stTabs [data-baseweb="tab"] {{
-  background:transparent;color:{MUTED};font-family:'IBM Plex Mono',monospace;
-  font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;padding:10px 18px;border-radius:10px;border-bottom:0;
+  background:transparent;
+  color:var(--muted)!important;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  padding:10px 18px;
+  border-radius:10px;
+  border-bottom:0;
 }}
 .stTabs [aria-selected="true"] {{
-  color:{NAVY}!important;background:linear-gradient(90deg,{CYAN},{GREEN})!important;font-weight:700!important;
+  color:#FFFFFF!important;
+  background:linear-gradient(90deg,var(--cyan),var(--green))!important;
+  font-weight:800!important;
 }}
 
-[data-testid="stMetric"] {{background:linear-gradient(135deg,rgba(16,42,76,.95),rgba(20,55,97,.92));border:1px solid rgba(43,106,159,.65);border-radius:16px;padding:14px!important;box-shadow:0 10px 30px rgba(0,0,0,.20);}}
-[data-testid="stMetricLabel"] {{color:{MUTED}!important;font-size:.76rem!important;font-weight:600!important;}}
-[data-testid="stMetricValue"] {{color:{WHITE}!important;font-family:'Space Grotesk',sans-serif!important;font-weight:800!important;}}
-[data-testid="stDataFrame"], .stTable {{border-radius:14px;overflow:hidden;}}
+/* Metric cards */
+[data-testid="stMetric"] {{
+  background:linear-gradient(135deg,#FFFFFF,#F4F9FF);
+  border:1px solid var(--border);
+  border-radius:17px;
+  padding:15px!important;
+  box-shadow:0 8px 22px rgba(60,120,180,.10);
+  overflow:hidden;
+}}
+[data-testid="stMetricLabel"] {{
+  color:var(--muted)!important;
+  font-size:.78rem!important;
+  font-weight:700!important;
+}}
+[data-testid="stMetricValue"] {{
+  color:var(--text)!important;
+  font-family:'Space Grotesk',sans-serif!important;
+  font-weight:800!important;
+  font-size:clamp(1.4rem,2.3vw,2.4rem)!important;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}}
+[data-testid="stMetricDelta"] {{color:var(--muted)!important;}}
 
-/* remove ugly white bands when zooming */
-[data-testid="stAppViewBlockContainer"], [data-testid="stVerticalBlock"] {{background:transparent!important;}}
-iframe {{border-radius:18px!important; background:{CBKG}!important;}}
+/* Tables and dataframe */
+[data-testid="stDataFrame"], .stTable {{
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  background:#FFFFFF!important;
+}}
+.stTable table {{
+  color:var(--text)!important;
+  background:#FFFFFF!important;
+}}
+.stTable th {{
+  color:var(--text)!important;
+  background:#D9ECFF!important;
+  font-weight:800!important;
+}}
+.stTable td {{
+  color:var(--text)!important;
+  background:#FFFFFF!important;
+}}
+[data-testid="stDataFrame"] * {{
+  color:var(--text)!important;
+}}
+
+/* Alerts / warnings */
+[data-testid="stAlert"] {{
+  background:#FFF7E6!important;
+  color:var(--text)!important;
+  border:1px solid #FCD38D!important;
+  border-radius:14px!important;
+}}
+[data-testid="stAlert"] * {{color:var(--text)!important;}}
+
+/* Buttons */
+.stButton button {{
+  background:linear-gradient(90deg,var(--cyan),var(--green))!important;
+  color:#FFFFFF!important;
+  border:none!important;
+  border-radius:10px!important;
+  font-weight:800!important;
+}}
+
+/* Select dropdown menu text */
+[data-baseweb="popover"] * {{
+  color:var(--text)!important;
+}}
+
+iframe {{
+  border-radius:18px!important;
+  background:{CBKG}!important;
+}}
+
 </style>""", unsafe_allow_html=True)
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MATH ENGINE
@@ -296,10 +544,10 @@ with st.sidebar:
 
     st.markdown("### 2. Market Situation Changes")
     price_change = st.slider(
-        "Price movement", -0.50, 0.50, 0.05, 0.01,
+        "Price movement: negative = price increase, positive = price discount", -0.50, 0.50, 0.05, 0.01,
         help="Example: -0.10 means price increases by 10% and adoption may fall. +0.10 means price is discounted by 10% and adoption may rise.")
-    ad_change    = st.slider("Advertising change", -0.50, 0.50, 0.06, 0.01)
-    tech_change  = st.slider("Technology improvement",    -0.50, 0.50, 0.08, 0.01)
+    ad_change    = st.slider("Advertising change: negative = less ads, positive = more ads", -0.50, 0.50, 0.06, 0.01)
+    tech_change  = st.slider("Technology improvement: negative = weaker tech, positive = better tech",    -0.50, 0.50, 0.08, 0.01)
 
     st.markdown("### 3. Product Selling Price")
     basic_price    = st.slider("Basic model price (USD)",    100, 800,  350, 10)
@@ -320,11 +568,11 @@ if override_on:
         edited.loc[idx,"Cleaning need score"]  = st.slider("Cleaning need score",  0.10,1.00,float(row["Cleaning need score"]),0.01)
         edited.loc[idx,"f_suitability"]    = round(edited.loc[idx,"Floor compatibility score"]*edited.loc[idx,"House suitability score"]*edited.loc[idx,"Cleaning need score"],4)
         edited.loc[idx,"Affordability score"]  = st.slider("Affordability score",  0.10,1.00,float(row["Affordability score"]),0.01)
-        edited.loc[idx,"p"]     = st.slider("Innovation effect: early buyer influence",    0.001,0.100,float(row["p"]),0.001)
-        edited.loc[idx,"q"]     = st.slider("Imitation effect: word-of-mouth influence",     0.050,0.800,float(row["q"]),0.010)
-        edited.loc[idx,"alpha"] = st.slider("Price sensitivity", -0.50,  1.0, float(row["alpha"]),0.1)
-        edited.loc[idx,"beta"]  = st.slider("Advertising influence",    -0.50,   3.0, float(row["beta"]),0.1)
-        edited.loc[idx,"gamma"] = st.slider("Technology attractiveness", -0.50,   3.0, float(row["gamma"]),0.1)
+        edited.loc[idx,"p"]     = st.slider("Innovation effect p: early buyer influence",    0.001,0.100,float(row["p"]),0.001)
+        edited.loc[idx,"q"]     = st.slider("Imitation effect q: word-of-mouth influence",     0.050,0.800,float(row["q"]),0.010)
+        edited.loc[idx,"alpha"] = st.slider("Price sensitivity α", -5.0,  1.0, float(row["alpha"]),0.1)
+        edited.loc[idx,"beta"]  = st.slider("Advertising influence β",    0.0,   3.0, float(row["beta"]),0.1)
+        edited.loc[idx,"gamma"] = st.slider("Technology attractiveness γ", 0.0,   3.0, float(row["gamma"]),0.1)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
