@@ -60,26 +60,65 @@ PLY = dict(
                tickfont=dict(color=MUTED),title_font=dict(color=MUTED),zeroline=False),
     margin=dict(l=50,r=30,t=50,b=40),
 )
+st.markdown("""
+<style>
 
-# ── CSS ──────────────────────────────────────────────────────────────────────
-st.markdown(f"""<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+/* ===== METRIC CARDS ===== */
+[data-testid="stMetric"]{
+    background: linear-gradient(145deg,#123B70,#0B2550);
+    border:1px solid #1F6FB2;
+    border-radius:22px;
+    padding:20px !important;
+    box-shadow:0 0 20px rgba(0,150,255,0.15);
+    min-height:140px;
 
-:root {{ --app-bg:{NAVY}; --panel:{PANEL}; --panel2:{PANEL2}; --border:{BORDER}; --text:{WHITE}; --muted:{MUTED}; --gold:{GOLD}; --cyan:{CYAN}; --green:{GREEN}; }}
-html, body, .stApp, [data-testid="stAppViewContainer"] {{
-  background:
-    radial-gradient(circle at 18% 8%, rgba(34,211,238,.16), transparent 28%),
-    radial-gradient(circle at 92% 0%, rgba(251,191,36,.12), transparent 24%),
-    linear-gradient(135deg, #07111F 0%, #0B1B33 48%, #06101D 100%) !important;
-  color:{WHITE};
-  font-family:'Inter', sans-serif;
-}}
-#MainMenu, footer, header {{ visibility:hidden; }}
-.block-container {{
-  padding-top:1.05rem!important; padding-left:2.2rem!important; padding-right:2.2rem!important;
-  max-width:1500px!important;
-}}
-section.main > div {{ background:transparent!important; }}
+    /* IMPORTANT FIX */
+    overflow:hidden;
+}
+
+/* LABEL */
+[data-testid="stMetricLabel"]{
+    color:#C7D8F5 !important;
+    font-size:1.1rem !important;
+    font-weight:500 !important;
+}
+
+/* VALUE */
+[data-testid="stMetricValue"]{
+    color:white !important;
+
+    /* RESPONSIVE TEXT */
+    font-size:clamp(2rem,4vw,4rem) !important;
+
+    font-weight:800 !important;
+    line-height:1 !important;
+
+    /* IMPORTANT FIX */
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+/* DELTA */
+[data-testid="stMetricDelta"]{
+    font-size:0.9rem !important;
+}
+
+/* MOBILE + SMALL SCREEN */
+@media (max-width: 1200px){
+
+    [data-testid="stMetric"]{
+        min-height:110px;
+        padding:16px !important;
+    }
+
+    [data-testid="stMetricValue"]{
+        font-size:clamp(1.5rem,3vw,3rem) !important;
+    }
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 /* top header */
 .corp-hdr {{
