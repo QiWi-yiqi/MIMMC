@@ -34,19 +34,19 @@ st.set_page_config(
 )
 
 # ── Design tokens: clean-tech premium theme ───────────────────────────────────
-NAVY   = "#0B1F3A"   # page background
-SLATE  = "#123B70"   # sidebar / tab bar
-PANEL  = "#184A8C"   # cards
+NAVY   = "#DCEEFF"   # main background (light blue)
+SLATE  = "#BFDFFF"   # sidebar / cards
+PANEL  = "#F4F9FF"   # panels
+BORDER = "#7FB3E6"
 PANEL2 = "#143761"   # lighter panel
-BORDER = "#2A6FB0"
 CYAN   = "#22D3EE"
-GREEN  = "#00E5C4"
-GOLD   = "#FFD166"
+GREEN  = "#00BFA6"
+GOLD   = "#FFB703"
+RED    = "#FF5A5F"
 ORANGE = "#FB923C"
-RED    = "#FB4B6B"
-WHITE  = "#F4F8FF"
-MUTED  = "#A8C1E8"
-CBKG   = "#10294A"
+WHITE  = "#102A43"   # IMPORTANT: dark text now
+MUTED  = "#486581"
+CBKG   = "#EAF4FF"
 SEG_C = ["#22D3EE", "#26E7A6", "#FBBF24", "#FB923C", "#A78BFA", "#F472B6", "#60A5FA", "#34D399"]
 PLY = dict(
     paper_bgcolor=CBKG, plot_bgcolor=CBKG,
