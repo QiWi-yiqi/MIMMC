@@ -544,7 +544,7 @@ with st.sidebar:
 
     st.markdown("### 2. Market Situation Changes")
     price_change = st.slider(
-        "Price movement: negative = price increase, positive = price discount", -0.50, 0.50, 0.05, 0.01,
+        "Price movement", -0.50, 0.50, 0.05, 0.01,
         help="Example: -0.10 means price increases by 10% and adoption may fall. +0.10 means price is discounted by 10% and adoption may rise.")
     ad_change    = st.slider("Advertising change", -0.50, 0.50, 0.06, 0.01)
     tech_change  = st.slider("Technology improvement",    -0.50, 0.50, 0.08, 0.01)
