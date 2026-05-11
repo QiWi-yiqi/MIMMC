@@ -60,65 +60,27 @@ PLY = dict(
                tickfont=dict(color=MUTED),title_font=dict(color=MUTED),zeroline=False),
     margin=dict(l=50,r=30,t=50,b=40),
 )
-st.markdown("""
-<style>
 
-/* ===== METRIC CARDS ===== */
-[data-testid="stMetric"]{
-    background: linear-gradient(145deg,#123B70,#0B2550);
-    border:1px solid #1F6FB2;
-    border-radius:22px;
-    padding:20px !important;
-    box-shadow:0 0 20px rgba(0,150,255,0.15);
-    min-height:140px;
+# ── CSS ──────────────────────────────────────────────────────────────────────
+st.markdown(f"""<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
-    /* IMPORTANT FIX */
-    overflow:hidden;
-}
-
-/* LABEL */
-[data-testid="stMetricLabel"]{
-    color:#C7D8F5 !important;
-    font-size:1.1rem !important;
-    font-weight:500 !important;
-}
-
-/* VALUE */
-[data-testid="stMetricValue"]{
-    color:white !important;
-
-    /* RESPONSIVE TEXT */
-    font-size:clamp(2rem,4vw,4rem) !important;
-
-    font-weight:800 !important;
-    line-height:1 !important;
-
-    /* IMPORTANT FIX */
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-/* DELTA */
-[data-testid="stMetricDelta"]{
-    font-size:0.9rem !important;
-}
-
-/* MOBILE + SMALL SCREEN */
-@media (max-width: 1200px){
-
-    [data-testid="stMetric"]{
-        min-height:110px;
-        padding:16px !important;
-    }
-
-    [data-testid="stMetricValue"]{
-        font-size:clamp(1.5rem,3vw,3rem) !important;
-    }
-}
-
-</style>
-""", unsafe_allow_html=True)
+:root {{ --app-bg:{NAVY}; --panel:{PANEL}; --panel2:{PANEL2}; --border:{BORDER}; --text:{WHITE}; --muted:{MUTED}; --gold:{GOLD}; --cyan:{CYAN}; --green:{GREEN}; }}
+html, body, .stApp, [data-testid="stAppViewContainer"] {{
+  background:
+    radial-gradient(circle at 18% 8%, rgba(34,211,238,.16), transparent 28%),
+    radial-gradient(circle at 92% 0%, rgba(251,191,36,.12), transparent 24%),
+    linear-gradient(135deg, #07111F 0%, #0B1B33 48%, #06101D 100%) !important;
+  color:#F5FBFF !important;
+text-shadow:0 0 12px rgba(0,200,255,0.35);
+  font-family:'Inter', sans-serif;
+}}
+#MainMenu, footer, header {{ visibility:hidden; }}
+.block-container {{
+  padding-top:1.05rem!important; padding-left:2.2rem!important; padding-right:2.2rem!important;
+  max-width:1500px!important;
+}}
+section.main > div {{ background:transparent!important; }}
 
 /* top header */
 .corp-hdr {{
@@ -184,7 +146,7 @@ hr.r {{border:none;border-top:1px solid rgba(43,106,159,.55);margin:22px 0;}}
   color:{NAVY}!important;background:linear-gradient(90deg,{CYAN},{GREEN})!important;font-weight:700!important;
 }}
 
-[data-testid="stMetric"] {{background:linear-gradient(135deg,rgba(16,42,76,.95),rgba(20,55,97,.92));border:1px solid rgba(43,106,159,.65);border-radius:16px;padding:14px!important;box-shadow:0 10px 30px rgba(0,0,0,.20);}}
+[data-testid="stMetricValue"]{color:#F5FBFF !important;text-shadow:0 0 12px rgba(0,200,255,0.35);font-size:clamp(2rem,4vw,4rem) !important;font-weight:800 !important;line-height:1 !important;}
 [data-testid="stMetricLabel"] {{color:{MUTED}!important;font-size:.76rem!important;font-weight:600!important;}}
 [data-testid="stMetricValue"] {{color:{WHITE}!important;font-family:'Space Grotesk',sans-serif!important;font-weight:800!important;}}
 [data-testid="stDataFrame"], .stTable {{border-radius:14px;overflow:hidden;}}
@@ -320,10 +282,10 @@ with st.sidebar:
 
     st.markdown("### 2. Market Situation Changes")
     price_change = st.slider(
-        "Price movement: negative = price increase, positive = price discount", -0.50, 0.50, 0.05, 0.01,
+        "Price movement", -0.50, 0.50, 0.05, 0.01,
         help="Example: -0.10 means price increases by 10% and adoption may fall. +0.10 means price is discounted by 10% and adoption may rise.")
-    ad_change    = st.slider("Advertising change: negative = less ads, positive = more ads", -0.50, 0.50, 0.06, 0.01)
-    tech_change  = st.slider("Technology improvement: negative = weaker tech, positive = better tech",    -0.50, 0.50, 0.08, 0.01)
+    ad_change    = st.slider("Advertising change", -0.50, 0.50, 0.06, 0.01)
+    tech_change  = st.slider("Technology improvement",    -0.50, 0.50, 0.08, 0.01)
 
     st.markdown("### 3. Product Selling Price")
     basic_price    = st.slider("Basic model price (USD)",    100, 800,  350, 10)
@@ -344,11 +306,11 @@ if override_on:
         edited.loc[idx,"Cleaning need score"]  = st.slider("Cleaning need score",  0.10,1.00,float(row["Cleaning need score"]),0.01)
         edited.loc[idx,"f_suitability"]    = round(edited.loc[idx,"Floor compatibility score"]*edited.loc[idx,"House suitability score"]*edited.loc[idx,"Cleaning need score"],4)
         edited.loc[idx,"Affordability score"]  = st.slider("Affordability score",  0.10,1.00,float(row["Affordability score"]),0.01)
-        edited.loc[idx,"p"]     = st.slider("Innovation effect p: early buyer influence",    0.001,0.100,float(row["p"]),0.001)
-        edited.loc[idx,"q"]     = st.slider("Imitation effect q: word-of-mouth influence",     0.050,0.800,float(row["q"]),0.010)
-        edited.loc[idx,"alpha"] = st.slider("Price sensitivity α", -5.0,  1.0, float(row["alpha"]),0.1)
-        edited.loc[idx,"beta"]  = st.slider("Advertising influence β",    0.0,   3.0, float(row["beta"]),0.1)
-        edited.loc[idx,"gamma"] = st.slider("Technology attractiveness γ", 0.0,   3.0, float(row["gamma"]),0.1)
+        edited.loc[idx,"p"]     = st.slider("Innovation effect: early buyer influence",    0.001,0.100,float(row["p"]),0.001)
+        edited.loc[idx,"q"]     = st.slider("Imitation effect: word-of-mouth influence",     0.050,0.800,float(row["q"]),0.010)
+        edited.loc[idx,"alpha"] = st.slider("Price sensitivity", -0.50,  1.0, float(row["alpha"]),0.1)
+        edited.loc[idx,"beta"]  = st.slider("Advertising influence",    -0.50,   3.0, float(row["beta"]),0.1)
+        edited.loc[idx,"gamma"] = st.slider("Technology attractiveness", -0.50,   3.0, float(row["gamma"]),0.1)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
