@@ -977,7 +977,7 @@ with tab3:
     for path in [os.path.join(os.path.dirname(os.path.abspath(__file__)), html_file), html_file]:
         if os.path.exists(path):
             with open(path,"r",encoding="utf-8") as f:
-                components.html(f.read(), height=1350, scrolling=True)
+                components.html(f.read(), height=2400, scrolling=True)
             break
     else:
         st.warning(f"""**Game file not found.**  
