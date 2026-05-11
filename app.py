@@ -34,9 +34,9 @@ st.set_page_config(
 )
 
 # ── Design tokens: clean-tech premium theme ───────────────────────────────────
-NAVY   = "#07111F"   # page background
-SLATE  = "#0B1B33"   # sidebar / tab bar
-PANEL  = "#102A4C"   # cards
+NAVY   = "#DCEEFF"   # page background
+SLATE  = "#123B70"   # sidebar / tab bar
+PANEL  = "#184A8C"   # cards
 PANEL2 = "#143761"   # lighter panel
 BORDER = "#2B6A9F"
 CYAN   = "#22D3EE"
