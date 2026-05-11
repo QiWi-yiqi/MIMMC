@@ -146,7 +146,7 @@ hr.r {{border:none;border-top:1px solid rgba(43,106,159,.55);margin:22px 0;}}
   color:{NAVY}!important;background:linear-gradient(90deg,{CYAN},{GREEN})!important;font-weight:700!important;
 }}
 
-[data-testid="stMetricValue"]{color:#F5FBFF !important;text-shadow:0 0 12px rgba(0,200,255,0.35);font-size:clamp(2rem,4vw,4rem) !important;font-weight:800 !important;line-height:1 !important;}
+[data-testid="stMetric"] {{background:linear-gradient(135deg,rgba(16,42,76,.95),rgba(20,55,97,.92));border:1px solid rgba(43,106,159,.65);border-radius:16px;padding:14px!important;box-shadow:0 10px 30px rgba(0,0,0,.20);}}
 [data-testid="stMetricLabel"] {{color:{MUTED}!important;font-size:.76rem!important;font-weight:600!important;}}
 [data-testid="stMetricValue"] {{color:{WHITE}!important;font-family:'Space Grotesk',sans-serif!important;font-weight:800!important;}}
 [data-testid="stDataFrame"], .stTable {{border-radius:14px;overflow:hidden;}}
