@@ -984,42 +984,51 @@ with tab2:
         st.markdown(f"""<div class="asmp">
         <strong>METHOD:</strong> This module translates customer requirements into engineering priorities using the House of Quality relationship matrix.
         Relationship scores follow the HoQ scale: <strong>9 = strong</strong>, <strong>3 = moderate</strong>, and <strong>1 = weak</strong>.
-        The default technical scores are calibrated to match the HoQ result row: Processing Power 3.80, Sensor Rate 3.51, Suction Power 2.81, Tank Capacity 2.63, and Mop Pressure 2.28.
+        The results are calibrated to match the HoQ technical importance scores from the HoQ result row.
         </div>""", unsafe_allow_html=True)
 
         st.markdown("#### Adjust Customer Requirement Importance")
-        st.caption("Move the sliders to test how engineering priorities change when customer needs become more or less important. Scores are automatically normalised.")
+        st.caption("Move the sliders to test how engineering priorities change when customer needs become more or less important. The scores are automatically normalised.")
 
-        c_left, c_right = st.columns([1.05, 1.6])
+        c_left, c_right = st.columns([1.1, 1.9])
+
         with c_left:
-            hoq_w1 = st.slider("Cleaning performance importance", 0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[0]), 0.01,
-                               help="Wet mop, anti-tangle brush, suction, and edge cleaning.")
-            hoq_w2 = st.slider("Self-maintenance importance", 0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[1]), 0.01,
-                               help="Auto-empty dock and auto water refill.")
-            hoq_w3 = st.slider("Navigation and mapping importance", 0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[2]), 0.01,
-                               help="SLAM navigation and multi-room mapping.")
-            hoq_w4 = st.slider("AI sensing importance", 0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[3]), 0.01,
-                               help="AI dirt detection and obstacle avoidance camera.")
-            hoq_w5 = st.slider("Connectivity and user experience importance", 0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[4]), 0.01,
-                               help="Voice control, app control, and carpet-hard floor transition.")
+            hoq_w1 = st.slider(
+                "Cleaning performance",
+                0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[0]), 0.01,
+                help="Wet mop, anti-tangle brush, suction, and edge cleaning."
+            )
+            hoq_w2 = st.slider(
+                "Self-maintenance",
+                0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[1]), 0.01,
+                help="Auto-empty dock and auto water refill."
+            )
+            hoq_w3 = st.slider(
+                "Navigation and mapping",
+                0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[2]), 0.01,
+                help="SLAM navigation and multi-room mapping."
+            )
+            hoq_w4 = st.slider(
+                "AI sensing",
+                0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[3]), 0.01,
+                help="AI dirt detection and obstacle avoidance camera."
+            )
+            hoq_w5 = st.slider(
+                "Connectivity and user experience",
+                0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[4]), 0.01,
+                help="Voice control, app control, and carpet-hard floor transition."
+            )
 
         selected_weights = np.array([hoq_w1, hoq_w2, hoq_w3, hoq_w4, hoq_w5], dtype=float)
         if selected_weights.sum() <= 0:
             selected_weights = HOQ_DEFAULT_WEIGHTS.copy()
-        normalised_weights = selected_weights / selected_weights.sum()
+
         hoq_scores = compute_hoq_scores(selected_weights)
 
         hoq_df = pd.DataFrame({
             "Engineering Feature": HOQ_FEATURES,
             "Technical Importance Score": hoq_scores,
-            "Rank": pd.Series(hoq_scores).rank(ascending=False, method="dense").astype(int),
-        }).sort_values(["Rank", "Technical Importance Score"], ascending=[True, False]).reset_index(drop=True)
-
-        req_df = pd.DataFrame({
-            "Customer Requirement": HOQ_REQUIREMENTS,
-            "Normalised Weight": normalised_weights,
-            "Weight (%)": normalised_weights * 100,
-        })
+        }).sort_values("Technical Importance Score", ascending=False).reset_index(drop=True)
 
         top_feature = hoq_df.iloc[0]
         second_feature = hoq_df.iloc[1]
@@ -1049,44 +1058,19 @@ with tab2:
             )
             st.plotly_chart(fig_hoq, use_container_width=True)
 
-        st.markdown('<hr class="r">', unsafe_allow_html=True)
-        t1, t2 = st.columns([1, 1])
-        with t1:
-            st.markdown("#### HoQ Engineering Priority Ranking")
-            st.dataframe(
-                hoq_df.style.format({"Technical Importance Score": "{:.2f}"}),
-                use_container_width=True,
-                hide_index=True,
-            )
-        with t2:
-            st.markdown("#### Normalised Customer Requirement Weights")
-            st.dataframe(
-                req_df.style.format({"Normalised Weight": "{:.3f}", "Weight (%)": "{:.1f}%"}),
-                use_container_width=True,
-                hide_index=True,
-            )
-
-        relation_df = pd.DataFrame(HOQ_RELATIONSHIP, columns=HOQ_FEATURES)
-        relation_df.insert(0, "Customer Requirement", HOQ_REQUIREMENTS)
-        relation_df.insert(1, "Weight", normalised_weights)
-
-        st.markdown("#### HoQ Relationship Matrix")
-        st.caption("0 = no direct relationship, 1 = weak, 3 = moderate, 9 = strong.")
-        st.dataframe(
-            relation_df.style.format({"Weight": "{:.3f}"}),
-            use_container_width=True,
-            hide_index=True,
-        )
-
         st.markdown(f"""<div class="ins">
-        <strong>ENGINEERING RECOMMENDATION:</strong><br>
-        The HoQ result shows that <strong>{top_feature['Engineering Feature']}</strong> is the most important engineering feature
-        with a score of <strong>{top_feature['Technical Importance Score']:.2f}</strong>. This means engineering investment should prioritise this feature first,
-        followed by <strong>{second_feature['Engineering Feature']}</strong>.
+        <strong>ENGINEERING INSIGHT:</strong><br><br>
+        The most important engineering feature is <strong>{top_feature['Engineering Feature']}</strong>
+        with a score of <strong>{top_feature['Technical Importance Score']:.2f}</strong>.
+        The second priority is <strong>{second_feature['Engineering Feature']}</strong>.
         <br><br>
-        <strong>Strategic implication:</strong> The final 2030 market-leading robot vacuum should emphasise high processing capability,
-        strong sensing/navigation, and reliable cleaning hardware. This connects the market forecast to concrete product specifications,
-        making the dashboard answer both <em>which product should win</em> and <em>what features the winning product should contain</em>.
+        <strong>Strategic meaning:</strong>
+        <ul>
+        <li>Focus engineering resources on top-ranked features first.</li>
+        <li>Do not spread investment evenly across all technical features.</li>
+        <li>High-impact features should be prioritised because they contribute most to customer satisfaction and market competitiveness.</li>
+        </ul>
+        <strong>Conclusion:</strong> The final 2030 market-leading robot vacuum should emphasise performance, sensing, navigation, and processing capability.
         </div>""", unsafe_allow_html=True)
 
     # 2D WCPI
