@@ -546,8 +546,8 @@ with st.sidebar:
     price_change = st.slider(
         "Price movement", -0.50, 0.50, 0.05, 0.01,
         help="Example: -0.10 means price increases by 10% and adoption may fall. +0.10 means price is discounted by 10% and adoption may rise.")
-    ad_change    = st.slider("Advertising change", -0.50, 0.50, 0.06, 0.01)
-    tech_change  = st.slider("Technology improvement",    -0.50, 0.50, 0.08, 0.01)
+    ad_change    = st.slider("Advertising change", 0.00, 0.50, 0.06, 0.01)
+    tech_change  = st.slider("Technology improvement",    0.000, 0.50, 0.08, 0.01)
 
     st.markdown("### 3. Product Selling Price")
     basic_price    = st.slider("Basic model price (USD)",    100, 800,  350, 10)
