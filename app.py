@@ -941,15 +941,7 @@ with tab2:
 
         ft = go.Figure(go.Bar(
             x=sd2["Impact (%)"], y=sd2["Parameter"], orientation="h",
-            def get_color(v):
-    if v > 5:
-        return "#00A878"   # strong positive (green)
-    elif v > 0:
-        return "#F59E0B"   # moderate (gold)
-    else:
-        return "#EF4444"   # negative (red)
-
-colors = [get_color(v) for v in sd2["Impact (%)"]],
+            marker_color=[GREEN if v>=0 else RED for v in sd2["Impact (%)"]],
             text=[f"{v:+.2f}%" for v in sd2["Impact (%)"]],
             textposition="outside", textfont=dict(color=WHITE, size=10),
         ))
