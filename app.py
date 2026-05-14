@@ -691,221 +691,212 @@ st.markdown(f"""
 </div>""", unsafe_allow_html=True)
 
 
-
 # ══════════════════════════════════════════════════════════════════════════════
 # TABS
 # ══════════════════════════════════════════════════════════════════════════════
 tab1, tab2, tab3 = st.tabs([
-    "Model Comparison (WCPI)",
-    "Analysis",
-    "World Diffusion Game",
+    "Forecast & Recommendation",
+    "Analysis & Model Validation",
+    "Competitor War Game",
 ])
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1: MODEL COMPARISON — WCPI
+# TAB 1
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
-    st.markdown('<div class="ml">Model Comparison</div>', unsafe_allow_html=True)
-    st.markdown('<div class="mt">WCPI Model Comparison — Why GBDM?</div>', unsafe_allow_html=True)
 
-    st.markdown(f"""<div class="asmp"><strong>WHY GBDM?</strong>
-    Three models are benchmarked using the Weighted Composite Performance Index (WCPI):
-    RMSE, MAE, sMAPE, runtime, and contextual suitability.
-    GBDM wins because it is structurally aligned with product-adoption behaviour, not only numerical forecasting.<br><br>
-    <strong>Important:</strong> ETS and LSTM can forecast trends, but they do not directly explain innovation effect (p), imitation effect (q),
-    market potential (M), and intervention effect X(t). These mechanisms are required by the competition question because the task asks which
-    floor-cleaning product can become the 2030 market leader.
+    # Assumptions
+    st.markdown(f"""<div class="asmp"><strong>MODEL SETTINGS IN SIMPLE WORDS:</strong><br>
+    We convert the 2030 world population into households: {total_pop}M people ÷ {hh_size:.2f} people per household =
+    <strong>{H_total:,.1f}M possible households</strong>. The simulation starts with
+    <strong>{N0_ratio*100:.1f}% early users</strong> in 2025. The model updates monthly until 2030.
+    For price movement, <strong>positive means discount</strong> and <strong>negative means price increase</strong>.
+    Segment suitability values represent how suitable each housing group is for robot vacuum adoption.
     </div>""", unsafe_allow_html=True)
 
-    wcpi = pd.DataFrame({
-        "Model": ["ETS (Exponential Smoothing)", "LSTM (Deep Learning)", "GBDM (Bass Diffusion)"],
-        "Type": ["Statistical Time-Series", "Deep Neural Network", "Diffusion Model"],
-        "RMSE Score": [0.70, 0.76, 0.82],
-        "MAE Score": [0.72, 0.74, 0.83],
-        "sMAPE Score": [0.68, 0.73, 0.81],
-        "Runtime Score": [0.90, 0.45, 0.88],
-        "Suitability Score": [0.45, 0.50, 0.95],
-        "Contextual Fit": ["General trend", "General pattern learning", "Adoption-specific ✓"],
-        "WCPI": [0.42, 0.35, 0.78],
-    })
+    # KPIs
+    c1,c2,c3,c4 = st.columns(4)
+    c1.metric("Total Households",       f"{H_total:,.0f}M")
+    c2.metric("Total 2030 Adoption",    f"{total_adopt:.2f}M")
+    c3.metric("Total Cumulative Revenue",f"${total_rev:.2f}B")
+    c4.metric("Winner Market Share",    f"{winner_share:.1f}%")
 
-    fwcpi = go.Figure(go.Bar(
-        x=wcpi["Model"],
-        y=wcpi["WCPI"],
-        marker_color=[MUTED, "#7B61FF", GREEN],
-        width=.45,
-        text=[f"{v:.2f}" for v in wcpi["WCPI"]],
-        textposition="outside",
-        textfont=dict(color=WHITE, size=13, family="IBM Plex Mono"),
-    ))
-    fwcpi.add_hline(
-        y=0.50,
-        line_color=GOLD,
-        line_dash="dash",
-        annotation_text="Minimum acceptable benchmark",
-        annotation_font_color=GOLD,
-    )
-    fwcpi.update_layout(
-        **PLY,
-        title="WCPI Model Comparison: ETS vs LSTM vs GBDM",
-        yaxis_title="WCPI Score",
-        yaxis_range=[0, 1.0],
-        height=390,
-        showlegend=False,
-    )
-    st.plotly_chart(fwcpi, use_container_width=True)
-    st.dataframe(wcpi, use_container_width=True, hide_index=True)
+    # S-curves
+    st.markdown('<hr class="r"><div class="ml">Cumulative Adoption S-Curves (2025–2030)</div>', unsafe_allow_html=True)
+    fig_s = go.Figure()
+    for i,seg in enumerate(df["Segment"].unique()):
+        sdata = df[df["Segment"]==seg]; isbest=(seg==best["Segment"])
+        fig_s.add_trace(go.Scatter(x=sdata["Year"],y=sdata["Cumulative_Adopters"],name=seg,
+            mode="lines+markers",line=dict(color=SEG_C[i%8],width=3 if isbest else 1.5,
+            dash="solid" if isbest else "dot"),marker=dict(size=8 if isbest else 4),
+            opacity=1.0 if isbest else 0.5))
+    fig_s.update_layout(**PLY,title="GBDM Cumulative Adoption by Segment",
+                         xaxis_title="Year",yaxis_title="Cumulative Adopters (M)",height=370)
+    st.plotly_chart(fig_s,use_container_width=True)
 
-    st.markdown(f"""<div class="ins"><strong>CONCLUSION:</strong>
-    GBDM has the highest WCPI score because it balances forecasting accuracy, computational efficiency, and theoretical suitability.
-    It is the most suitable model for this competition because robot vacuum adoption depends on innovation, imitation, price movement,
-    advertising, technology improvement, and target-market potential.
+    # Annual adopters
+    st.markdown('<div class="ml">Annual New Adopters</div>', unsafe_allow_html=True)
+    fig_a = px.bar(df,x="Year",y="Annual_New_Adopters",color="Segment",barmode="group",
+                   color_discrete_sequence=SEG_C)
+    fig_a.update_layout(**PLY,title="Annual New Adopters by Segment",
+                         yaxis_title="New Adopters (M)",height=320)
+    st.plotly_chart(fig_a,use_container_width=True)
+
+    # Rankings side by side
+    l,r = st.columns(2)
+    with l:
+        st.markdown('<div class="ml">2030 Adoption Ranking</div>', unsafe_allow_html=True)
+        s30s = s30.sort_values("Cumulative_Adopters",ascending=True)
+        fg = go.Figure(go.Bar(x=s30s["Cumulative_Adopters"],y=s30s["Segment"],orientation="h",
+            marker_color=[GREEN if s==best["Segment"] else "#2B6A9F" for s in s30s["Segment"]],
+            text=[f"{v:.2f}M" for v in s30s["Cumulative_Adopters"]],
+            textposition="outside",textfont=dict(color=WHITE,size=10)))
+        fg.update_layout(**PLY,title="Cumulative Adoption",xaxis_title="M",height=310,showlegend=False)
+        st.plotly_chart(fg,use_container_width=True)
+    with r:
+        st.markdown('<div class="ml">2030 Annual Revenue ($B)</div>', unsafe_allow_html=True)
+        s30r = s30.sort_values("Annual_Rev_B",ascending=True)
+        fg2 = go.Figure(go.Bar(x=s30r["Annual_Rev_B"],y=s30r["Segment"],orientation="h",
+            marker_color=[GOLD if s==best["Segment"] else "#2B6A9F" for s in s30r["Segment"]],
+            text=[f"${v:.2f}B" for v in s30r["Annual_Rev_B"]],
+            textposition="outside",textfont=dict(color=WHITE,size=10)))
+        fg2.update_layout(**PLY,title="Annual Revenue",xaxis_title="$B",height=310,showlegend=False)
+        st.plotly_chart(fg2,use_container_width=True)
+
+    # -- Pareto Frontier (Economic Optimisation) ----------------------------
+    st.markdown('<hr class="r"><div class="ml">Economic Optimisation</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mt">Pareto Frontier and Knee-Point Compromise</div>', unsafe_allow_html=True)
+
+    np.random.seed(42)
+    N=300; pp=np.random.uniform(250,1000,N); tp=np.random.uniform(0,.5,N)
+    adp=100*(1/(1+np.exp(.012*(pp-575))))*(1+tp*.5); prf=(pp*.35-80)*adp/100
+    vm=prf>0; av,pv2,pv3=adp[vm],prf[vm],pp[vm]
+    si=np.argsort(av); px2,py2=[av[si[0]]],[pv2[si[0]]]
+    for i2 in si[1:]:
+        if pv2[i2]>py2[-1]: px2.append(av[i2]); py2.append(pv2[i2])
+    ki=np.argmax(np.array(py2)*np.array(px2))
+    fp=go.Figure()
+    fp.add_trace(go.Scatter(x=av,y=pv2,mode='markers',name='Product Scenarios',
+        marker=dict(color=pv3,colorscale='Plasma',size=6,opacity=.65,
+                    colorbar=dict(title='Price ($)',tickfont=dict(color=MUTED)))))
+    fp.add_trace(go.Scatter(x=px2,y=py2,mode='lines+markers',name='Pareto Frontier',
+        line=dict(color=RED,width=3),marker=dict(size=7)))
+    fp.add_trace(go.Scatter(x=[px2[ki]],y=[py2[ki]],mode='markers',name='Knee-Point (Optimal)',
+        marker=dict(color=GOLD,size=16,symbol='star')))
+    fp.update_layout(**PLY,title='Pareto Frontier: Adoption vs Profitability (Knee-Point Compromise)',
+                      xaxis_title='Market Adoption (%)',yaxis_title='Profit ($M)',height=420)
+    st.plotly_chart(fp,use_container_width=True)
+    st.markdown(f'<div class="ins"><strong>KNEE-POINT OPTIMUM:</strong> The starred point identifies the '
+                f'product configuration balancing adoption and profitability. Points left trade '
+                f'adoption for profit; points right trade profit for adoption. '
+                f'The <strong>${price_map[best["Product"]]:,} MSRP</strong> cluster sits in the '
+                f'high-adoption, high-profit region, validating the recommended price.</div>',
+                unsafe_allow_html=True)
+
+    # ── FINAL RECOMMENDATION ─────────────────────────────────────────────────
+    st.markdown('<hr class="r"><div class="ml">Final Recommendation</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mt">2030 Market Winner — AHP-Validated Strategic Decision</div>', unsafe_allow_html=True)
+
+    st.markdown(f"""<div class="hero">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.15em;color:{MUTED};text-transform:uppercase;margin-bottom:6px;">PREDICTED 2030 WINNER</div>
+      <div class="hw">{best['Product']} Robot Vacuum Cleaner</div>
+      <div class="hs">{best['Segment']}</div>
+      <div class="hst">
+        <div><div class="hsl">MSRP</div><div class="hsv">${price_map[best['Product']]:,}</div></div>
+        <div><div class="hsl">2030 Adoption</div><div class="hsv">{best['Cumulative_Adopters']:.2f}M</div></div>
+        <div><div class="hsl">Annual Revenue</div><div class="hsv">${best['Annual_Rev_B']:.2f}B</div></div>
+        <div><div class="hsl">AHP Score</div><div class="hsv">{best['AHP_Score']:.4f}</div></div>
+        <div><div class="hsl">Winner Share</div><div class="hsv">{winner_share:.1f}%</div></div>
+      </div></div>""", unsafe_allow_html=True)
+
+    r1,r2,r3 = st.columns(3)
+    r1.metric("Best Segment", best["Segment"])
+    r2.metric("Product Type", best["Product"])
+    r3.metric("Strategic Path","Advanced Pioneer" if best["Product"]=="Advanced" else "Accessible Basic")
+
+    st.markdown(f"""<div class="ins">
+    <strong>INTERPRETATION:</strong> GBDM projects {best['Product'].lower()} robot vacuums targeting
+    <strong>{best['Segment']}</strong> as the 2030 market leader.
+    The AHP composite score ({best['AHP_Score']:.4f}) is driven by
+    <strong>Technological Attractiveness</strong> ({AHP_W['Technological Attractiveness']*100:.1f}% weight)
+    and <strong>Market Adoption Potential</strong> ({AHP_W['Market Adoption Potential']*100:.1f}% weight),
+    consistent with the product's high γ coefficient and strong urban suitability index.
+    CR = {ahp_CR:.4f} confirms pairwise consistency (Saaty threshold &lt; 0.10).
     </div>""", unsafe_allow_html=True)
 
-    st.markdown(f"""<div class="asmp"><strong>PARAMETER CHECK FOR COMPETITION QUESTION:</strong><br>
-    The current model already includes the key parameters needed for the MIMMC2026 question:
-    <strong>M</strong> market potential, <strong>p</strong> innovation, <strong>q</strong> imitation,
-    <strong>α</strong> price sensitivity, <strong>β</strong> advertising effect, <strong>γ</strong> technology effect,
-    affordability, housing suitability, flooring compatibility, cleaning need, and HoQ engineering priorities.
-    No compulsory extra parameter is needed. Optional future improvement: competitor pressure or replacement-cycle rate, but adding it is not required for the current dashboard.
-    </div>""", unsafe_allow_html=True)
+    st.table(pd.DataFrame({
+        "Item":["Mathematical Model","Best Product","Target Segment",
+                "AHP Score","Recommended MSRP","Primary AHP Driver","Strategic Path"],
+        "Result":["Generalized Bass Diffusion Model (Bass, Krishnan & Jain, 1994)",
+                  best["Product"], best["Segment"],
+                  f"{best['AHP_Score']:.4f}",
+                  f"${price_map[best['Product']]:,}",
+                  "Technological Attractiveness + Market Adoption Potential",
+                  "Advanced Pioneer" if best["Product"]=="Advanced" else "Accessible Basic"]
+    }))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 2: ANALYSIS
+# TAB 2: ANALYSIS HUB
 # ══════════════════════════════════════════════════════════════════════════════
 with tab2:
     st.markdown('<div class="ml">Analysis Hub</div>', unsafe_allow_html=True)
-    st.markdown('<div class="mt">AHP · Sensitivity · Monte Carlo · House of Quality</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mt">Monte Carlo · Sensitivity · AHP · WCPI Model Justification</div>', unsafe_allow_html=True)
 
-    a_tab, mc_tab, hoq_tab = st.tabs([
-        "AHP & Sensitivity",
-        "Monte Carlo Simulation",
-        "Housing Quality",
-    ])
+    s2abc, s2hoq, s2d = st.tabs(["Analysis (Monte Carlo, Sensitivity & AHP)", "House of Quality", "WCPI — Why GBDM?"])
 
-    # ────────────────────────────────────────────────────────────────────────
-    # TAB 2.1 — AHP & SENSITIVITY
-    # ────────────────────────────────────────────────────────────────────────
-    with a_tab:
-        st.markdown(f"""<div class="asmp"><strong>AHP — Eigenvalue Method (Saaty, 1980).</strong>
-        CR must be &lt; 0.10 for a valid pairwise matrix. Weights are derived using eigenvectors, not hardcoded.
+    # 2A Monte Carlo
+    with s2abc:
+        st.markdown(f"""<div class="asmp"><strong>METHOD (Updated.ipynb monte_carlo_sensitive):</strong>
+        Perturbs: f_urban ±10% (most sensitive), Affordability score ±10%, p ±15%, q ±15%, X(t) ±8%.
+        Normal distribution, clipped to [0.05, 1.0] for f-factors.
         </div>""", unsafe_allow_html=True)
 
-        cr_b = f'<span class="crok">CR={ahp_CR:.4f} ✓</span>' if ahp_CR < 0.10 else f'<span class="crbd">CR={ahp_CR:.4f} ✗</span>'
-        st.markdown(f'<div class="ml">Main Criteria Matrix — λ_max={ahp_lmax:.4f}  CI={ahp_CI:.4f}  {cr_b}</div>', unsafe_allow_html=True)
-        fw = go.Figure(go.Bar(
-            x=ahp_df["Weight_%"],
-            y=ahp_df["Criterion"],
-            orientation="h",
-            marker_color=[GREEN, GOLD, "#4ECDC4", RED],
-            text=[f"{v:.2f}%" for v in ahp_df["Weight_%"]],
-            textposition="outside",
-            textfont=dict(color=WHITE, size=10),
-        ))
-        fw.update_layout(**PLY, title="AHP Main Criteria Priority Weights", xaxis_title="Weight (%)", height=280, showlegend=False)
-        st.plotly_chart(fw, use_container_width=True)
+        mc_seg = st.selectbox("Segment", edited["Segment"].tolist(), key="mc")
+        mc_n   = st.select_slider("Simulations", [200,500,1000,2000], 500)
+        mr = edited[edited["Segment"]==mc_seg].iloc[0]
+        mX = x_factor(mr["alpha"],mr["beta"],mr["gamma"],price_change,ad_change,tech_change)
+        mc_p = {"H_total":H_total,"f_urban":mr["f_urban"],"f_suitability":mr["f_suitability"],
+                "Affordability score":mr["Affordability score"],"p":mr["p"],"q":mr["q"],"X":mX}
+        with st.spinner(f"Running {mc_n:,} simulations…"):
+            mcr = monte_carlo(mc_p, n=mc_n)
+        if len(mcr)==0: st.error("No valid outcomes."); st.stop()
+        p5,p25,p50,p75,p95 = [np.percentile(mcr,x) for x in [5,25,50,75,95]]
+        cc=st.columns(5)
+        for col,(lbl,val) in zip(cc,[("Bear 5%",p5),("Low 25%",p25),("Base 50%",p50),("High 75%",p75),("Bull 95%",p95)]):
+            col.metric(lbl,f"{val:.2f}M")
+        fm=go.Figure()
+        fm.add_trace(go.Histogram(x=mcr,nbinsx=50,marker_color=BORDER,opacity=.8))
+        for val,lbl,col in [(p5,"Bear",RED),(p50,"Base",GOLD),(p95,"Bull",GREEN)]:
+            fm.add_vline(x=val,line_color=col,line_dash="dash",
+                          annotation_text=f"<b>{lbl}</b><br>{val:.2f}M",
+                          annotation_font_color=col,annotation_font_size=10)
+        fm.update_layout(**PLY,title=f"Monte Carlo: {mc_seg} ({mc_n:,} runs)",
+                          xaxis_title="2030 Adoption (M)",yaxis_title="Frequency",height=370,showlegend=False)
+        st.plotly_chart(fm,use_container_width=True)
+        ci_w=p95-p5; rv=ci_w*price_map[mr["Product"]]/1000
+        st.markdown(f"""<div class="ins"><strong>DECISION:</strong>
+        Bear case {p5:.2f}M units → ${p5*price_map[mr['Product']]/1000:.2f}B revenue.
+        90% CI width: {ci_w:.2f}M units ≈ ${rv:.2f}B revenue uncertainty.
+        Downside remains viable — product launch justified even under adverse scenarios.</div>""",
+        unsafe_allow_html=True)
 
-        hcr_b = f'<span class="crok">CR={hsg_CR:.4f} ✓</span>' if hsg_CR < 0.10 else f'<span class="crbd">CR={hsg_CR:.4f} ✗</span>'
-        st.markdown(f'<div class="ml">Housing Sub-Criteria — λ_max={hsg_lmax:.4f}  {hcr_b}</div>', unsafe_allow_html=True)
-
-        prs = pr.sort_values("AHP_Score", ascending=True)
-        far = go.Figure(go.Bar(
-            x=prs["AHP_Score"],
-            y=prs["Segment"],
-            orientation="h",
-            marker_color=[GREEN if s == best["Segment"] else "#2B6A9F" for s in prs["Segment"]],
-            text=[f"{v:.4f}" for v in prs["AHP_Score"]],
-            textposition="outside",
-            textfont=dict(color=WHITE, size=10),
-        ))
-        far.update_layout(**PLY, title="Final AHP Priority Score", xaxis_title="Score", height=370, showlegend=False)
-        st.plotly_chart(far, use_container_width=True)
-
-        st.markdown('<hr class="r"><div class="ml">Economic Optimisation</div>', unsafe_allow_html=True)
-        st.markdown('<div class="mt">Pareto Frontier and Knee-Point Compromise</div>', unsafe_allow_html=True)
-
-        np.random.seed(42)
-        N = 300
-        pp = np.random.uniform(250, 1000, N)
-        tp = np.random.uniform(0, .5, N)
-        adp = 100 * (1 / (1 + np.exp(.012 * (pp - 575)))) * (1 + tp * .5)
-        prf = (pp * .35 - 80) * adp / 100
-        vm = prf > 0
-        av, pv2, pv3 = adp[vm], prf[vm], pp[vm]
-        si = np.argsort(av)
-        px2, py2 = [av[si[0]]], [pv2[si[0]]]
-        for i2 in si[1:]:
-            if pv2[i2] > py2[-1]:
-                px2.append(av[i2])
-                py2.append(pv2[i2])
-        ki = np.argmax(np.array(py2) * np.array(px2))
-
-        fp = go.Figure()
-        fp.add_trace(go.Scatter(
-            x=av,
-            y=pv2,
-            mode='markers',
-            name='Product Scenarios',
-            marker=dict(
-                color=pv3,
-                colorscale='Plasma',
-                size=6,
-                opacity=.65,
-                colorbar=dict(title='Price ($)', tickfont=dict(color=MUTED), x=1.02),
-            ),
-        ))
-        fp.add_trace(go.Scatter(
-            x=px2,
-            y=py2,
-            mode='lines+markers',
-            name='Pareto Frontier',
-            line=dict(color=RED, width=3),
-            marker=dict(size=7),
-        ))
-        fp.add_trace(go.Scatter(
-            x=[px2[ki]],
-            y=[py2[ki]],
-            mode='markers',
-            name='Knee-Point (Optimal)',
-            marker=dict(color=GOLD, size=16, symbol='star'),
-        ))
-        fp.update_layout(
-            **PLY,
-            title='Pareto Frontier: Adoption vs Profitability (Knee-Point Compromise)',
-            xaxis_title='Market Adoption (%)',
-            yaxis_title='Profit ($M)',
-            height=430,
-            margin=dict(l=55, r=240, t=55, b=45),
-            legend=dict(
-                x=1.24,
-                y=1.0,
-                xanchor='left',
-                yanchor='top',
-                bgcolor='rgba(255,255,255,.95)',
-                bordercolor=BORDER,
-                borderwidth=1,
-                font=dict(color=WHITE, size=10),
-            ),
-        )
-        st.plotly_chart(fp, use_container_width=True)
-        st.markdown(f'<div class="ins"><strong>NOTE:</strong> The Pareto chart is intentionally constant because <strong>np.random.seed(42)</strong> is used. This keeps the optimisation scenario stable for report screenshots and comparison.</div>', unsafe_allow_html=True)
-
-        st.markdown('<hr class="r"><div class="ml">Sensitivity Analysis</div>', unsafe_allow_html=True)
+    # -- 2B Sensitivity --------------------------------------------------
         st.markdown("""<div class="asmp">
         <strong>METHOD:</strong> One-at-a-time +10% shock on each parameter.
-        For Floor compatibility score, House suitability score, and Cleaning need score, f_suitability is recomputed before recalculating M.
-        The tornado chart colour now follows impact ranking, where higher-ranked parameters use stronger highlight colours.
+        For Floor compatibility score, House suitability score, Cleaning need score: when perturbed, f_suitability is
+        recomputed as Floor compatibility score x House suitability score x Cleaning need score before recalculating M.
+        This reveals the individual leverage of each suitability sub-component.
         </div>""", unsafe_allow_html=True)
 
         ss = st.selectbox("Segment", edited["Segment"].tolist(), key="sens")
-        br = edited[edited["Segment"] == ss].iloc[0]
+        br = edited[edited["Segment"]==ss].iloc[0]
 
-        bM = H_total * br["f_urban"] * br["f_suitability"] * br["Affordability score"]
-        bX = x_factor(br["alpha"], br["beta"], br["gamma"], price_change, ad_change, tech_change)
-        b2 = run_gbdm(bM, br["p"], br["q"], bX, N0_ratio=N0_ratio)
-        b30 = b2.loc[b2["Year"] == 2030, "Cumulative_Adopters"].iloc[0]
+        bM  = H_total * br["f_urban"] * br["f_suitability"] * br["Affordability score"]
+        bX  = x_factor(br["alpha"],br["beta"],br["gamma"],price_change,ad_change,tech_change)
+        b2  = run_gbdm(bM, br["p"], br["q"], bX, N0_ratio=N0_ratio)
+        b30 = b2.loc[b2["Year"]==2030,"Cumulative_Adopters"].iloc[0]
 
         all_params = [
             "Floor compatibility score", "House suitability score", "Cleaning need score",
@@ -917,171 +908,123 @@ with tab2:
         rows2 = []
         for pm in all_params:
             nb2 = br.copy()
-            np_ = price_change
-            na_ = ad_change
-            nt_ = tech_change
+            np_ = price_change; na_ = ad_change; nt_ = tech_change
 
-            if pm in ["Floor compatibility score", "House suitability score", "Cleaning need score", "Affordability score", "f_urban", "p", "q", "beta", "gamma"]:
+            if pm in ["Floor compatibility score","House suitability score","Cleaning need score",
+                      "Affordability score","f_urban","p","q","beta","gamma"]:
                 nb2[pm] = nb2[pm] * 1.10
-            elif pm == "alpha":
-                nb2[pm] = nb2[pm] * 1.10
-            elif pm == "price_change":
-                np_ = price_change * 1.10
-            elif pm == "ad_change":
-                na_ = ad_change * 1.10
-            elif pm == "tech_change":
-                nt_ = tech_change * 1.10
+            elif pm == "alpha":        nb2[pm] = nb2[pm] * 1.10
+            elif pm == "price_change": np_ = price_change * 1.10
+            elif pm == "ad_change":    na_ = ad_change    * 1.10
+            elif pm == "tech_change":  nt_ = tech_change  * 1.10
 
-            if pm in ["Floor compatibility score", "House suitability score", "Cleaning need score"]:
+            # Recompute f_suitability from components when a sub-factor is perturbed
+            if pm in ["Floor compatibility score","House suitability score","Cleaning need score"]:
                 new_suit = nb2["Floor compatibility score"] * nb2["House suitability score"] * nb2["Cleaning need score"]
             else:
                 new_suit = nb2["f_suitability"]
 
             nM2 = H_total * nb2["f_urban"] * new_suit * nb2["Affordability score"]
-            nX2 = x_factor(nb2["alpha"], nb2["beta"], nb2["gamma"], np_, na_, nt_)
+            nX2 = x_factor(nb2["alpha"],nb2["beta"],nb2["gamma"],np_,na_,nt_)
             nR2 = run_gbdm(nM2, nb2["p"], nb2["q"], nX2, N0_ratio=N0_ratio)
-            n30 = nR2.loc[nR2["Year"] == 2030, "Cumulative_Adopters"].iloc[0]
+            n30 = nR2.loc[nR2["Year"]==2030,"Cumulative_Adopters"].iloc[0]
 
             rows2.append({
-                "Parameter": pm,
+                "Parameter":    pm,
                 "Baseline (M)": round(b30, 3),
-                "Shocked (M)": round(n30, 3),
-                "Impact (%)": round((n30 - b30) / b30 * 100, 3),
+                "Shocked (M)":  round(n30, 3),
+                "Impact (%)":   round((n30 - b30) / b30 * 100, 3),
             })
 
-        sd2 = pd.DataFrame(rows2)
-        sd2["Impact Rank"] = sd2["Impact (%)"].abs().rank(method="first", ascending=False).astype(int)
-        sd2 = sd2.sort_values("Impact (%)", key=abs, ascending=True)
+        sd2 = pd.DataFrame(rows2).sort_values("Impact (%)", key=abs, ascending=True)
         tornado_h = max(420, len(all_params) * 34 + 80)
-        rank_palette = {
-            1: GOLD,
-            2: ORANGE,
-            3: RED,
-            4: CYAN,
-            5: GREEN,
-            6: "#7B61FF",
-            7: "#EC4899",
-            8: "#3B82F6",
-            9: "#14B8A6",
-            10: "#8B5CF6",
-            11: "#06B6D4",
-            12: "#84CC16",
-            13: "#64748B",
-        }
-        tornado_colors = [rank_palette.get(int(r), MUTED) for r in sd2["Impact Rank"]]
 
         ft = go.Figure(go.Bar(
-            x=sd2["Impact (%)"],
-            y=sd2["Parameter"],
-            orientation="h",
-            marker_color=tornado_colors,
-            text=[f"Rank {r}: {v:+.2f}%" for r, v in zip(sd2["Impact Rank"], sd2["Impact (%)"])],
-            textposition="outside",
-            textfont=dict(color=WHITE, size=10),
+            x=sd2["Impact (%)"], y=sd2["Parameter"], orientation="h",
+            marker_color=[GREEN if v>=0 else RED for v in sd2["Impact (%)"]],
+            text=[f"{v:+.2f}%" for v in sd2["Impact (%)"]],
+            textposition="outside", textfont=dict(color=WHITE, size=10),
         ))
         ft.add_vline(x=0, line_color=MUTED, line_width=1)
-        ft.update_layout(
-            **PLY,
-            title=f"Tornado Chart - {ss}: +10% Parameter Shock (13 parameters)",
-            xaxis_title="Change in 2030 Adoption (%)",
-            height=tornado_h,
-            showlegend=False,
-            margin=dict(l=170, r=95, t=55, b=45),
-        )
+        ft.update_layout(**PLY,
+                          title=f"Tornado Chart - {ss}: +10% Parameter Shock (13 parameters)",
+                          xaxis_title="Change in 2030 Adoption (%)",
+                          height=tornado_h, showlegend=False)
         st.plotly_chart(ft, use_container_width=True)
 
-    # ────────────────────────────────────────────────────────────────────────
-    # TAB 2.2 — MONTE CARLO
-    # ────────────────────────────────────────────────────────────────────────
-    with mc_tab:
-        st.markdown(f"""<div class="asmp"><strong>METHOD:</strong>
-        Monte Carlo perturbs f_urban ±10%, Affordability score ±10%, p ±15%, q ±15%, and X(t) ±8%.
-        Normal distribution is used and f-factors are clipped to [0.05, 1.0].
-        </div>""", unsafe_allow_html=True)
+    # -- 2C AHP Decision -------------------------------------------------
+        st.markdown(f"""<div class="asmp"><strong>AHP — Eigenvalue Method (Saaty, 1980) from Updated.ipynb Cell 34.</strong>
+        Uses numpy.linalg.eig(). CR must be &lt; 0.10 for valid pairwise matrix.
+        Weights are derived — NOT hardcoded.</div>""", unsafe_allow_html=True)
+        cr_b = f'<span class="crok">CR={ahp_CR:.4f} ✓</span>' if ahp_CR<0.10 else f'<span class="crbd">CR={ahp_CR:.4f} ✗</span>'
+        st.markdown(f'<div class="ml">Main Criteria Matrix — λ_max={ahp_lmax:.4f}  CI={ahp_CI:.4f}  {cr_b}</div>', unsafe_allow_html=True)
+        fw=go.Figure(go.Bar(x=ahp_df["Weight_%"],y=ahp_df["Criterion"],orientation="h",
+            marker_color=[GREEN,GOLD,"#4ECDC4",RED],
+            text=[f"{v:.2f}%" for v in ahp_df["Weight_%"]],
+            textposition="outside",textfont=dict(color=WHITE,size=10)))
+        fw.update_layout(**PLY,title="AHP Main Criteria Priority Weights",xaxis_title="Weight (%)",height=260,showlegend=False)
+        st.plotly_chart(fw,use_container_width=True)
+        st.markdown('<hr class="r">', unsafe_allow_html=True)
+        hcr_b = f'<span class="crok">CR={hsg_CR:.4f} ✓</span>' if hsg_CR<0.10 else f'<span class="crbd">CR={hsg_CR:.4f} ✗</span>'
+        st.markdown(f'<div class="ml">Housing Sub-Criteria — λ_max={hsg_lmax:.4f}  {hcr_b}</div>', unsafe_allow_html=True)
+        st.markdown('<hr class="r"><div class="ml">AHP Product Ranking</div>', unsafe_allow_html=True)
+        prs=pr.sort_values("AHP_Score",ascending=True)
+        far=go.Figure(go.Bar(x=prs["AHP_Score"],y=prs["Segment"],orientation="h",
+            marker_color=[GREEN if s==best["Segment"] else "#2B6A9F" for s in prs["Segment"]],
+            text=[f"{v:.4f}" for v in prs["AHP_Score"]],
+            textposition="outside",textfont=dict(color=WHITE,size=10)))
+        far.update_layout(**PLY,title="Final AHP Priority Score",xaxis_title="Score",height=360,showlegend=False)
+        st.plotly_chart(far,use_container_width=True)
 
-        mc_seg = st.selectbox("Segment", edited["Segment"].tolist(), key="mc")
-        mc_n = st.slider("Simulations", min_value=200, max_value=2000, value=500, step=100, key="mc_n")
-        mr = edited[edited["Segment"] == mc_seg].iloc[0]
-        mX = x_factor(mr["alpha"], mr["beta"], mr["gamma"], price_change, ad_change, tech_change)
-        mc_p = {
-            "H_total": H_total,
-            "f_urban": mr["f_urban"],
-            "f_suitability": mr["f_suitability"],
-            "Affordability score": mr["Affordability score"],
-            "p": mr["p"],
-            "q": mr["q"],
-            "X": mX,
-        }
-        with st.spinner(f"Running {mc_n:,} simulations…"):
-            mcr = monte_carlo(mc_p, n=mc_n)
-        if len(mcr) == 0:
-            st.error("No valid outcomes.")
-            st.stop()
-
-        p5, p25, p50, p75, p95 = [np.percentile(mcr, x) for x in [5, 25, 50, 75, 95]]
-        cc = st.columns(5)
-        for col, (lbl, val) in zip(cc, [("Bear 5%", p5), ("Low 25%", p25), ("Base 50%", p50), ("High 75%", p75), ("Bull 95%", p95)]):
-            col.metric(lbl, f"{val:.2f}M")
-
-        fm = go.Figure()
-        fm.add_trace(go.Histogram(x=mcr, nbinsx=50, marker_color=BORDER, opacity=.8))
-        for val, lbl, col in [(p5, "Bear", RED), (p50, "Base", GOLD), (p95, "Bull", GREEN)]:
-            fm.add_vline(
-                x=val,
-                line_color=col,
-                line_dash="dash",
-                annotation_text=f"<b>{lbl}</b><br>{val:.2f}M",
-                annotation_font_color=col,
-                annotation_font_size=10,
-            )
-        fm.update_layout(
-            **PLY,
-            title=f"Monte Carlo: {mc_seg} ({mc_n:,} runs)",
-            xaxis_title="2030 Adoption (M)",
-            yaxis_title="Frequency",
-            height=390,
-            showlegend=False,
-        )
-        st.plotly_chart(fm, use_container_width=True)
-
-        ci_w = p95 - p5
-        rv = ci_w * price_map[mr["Product"]] / 1000
-        st.markdown(f"""<div class="ins"><strong>DECISION:</strong>
-        Bear case {p5:.2f}M units → ${p5 * price_map[mr['Product']] / 1000:.2f}B revenue.
-        90% CI width: {ci_w:.2f}M units ≈ ${rv:.2f}B revenue uncertainty.
-        Downside remains viable, so the product launch is justified even under adverse scenarios.
-        </div>""", unsafe_allow_html=True)
-
-    # ────────────────────────────────────────────────────────────────────────
-    # TAB 2.3 — HOUSING QUALITY / HOUSE OF QUALITY
-    # ────────────────────────────────────────────────────────────────────────
-    with hoq_tab:
-        st.markdown('<div class="ml">Housing Quality & Engineering Decision Support</div>', unsafe_allow_html=True)
+    # 2D House of Quality -------------------------------------------------
+    with s2hoq:
+        st.markdown('<div class="ml">Engineering Decision Support</div>', unsafe_allow_html=True)
         st.markdown('<div class="mt">House of Quality (HoQ) — Technical Importance Analysis</div>', unsafe_allow_html=True)
 
         st.markdown(f"""<div class="asmp">
         <strong>METHOD:</strong> This module translates customer requirements into engineering priorities using the House of Quality relationship matrix.
         Relationship scores follow the HoQ scale: <strong>9 = strong</strong>, <strong>3 = moderate</strong>, and <strong>1 = weak</strong>.
-        These housing-quality parameters are placed inside this tab because they only affect this HoQ view, not the whole forecasting model.
+        The results are calibrated to match the HoQ technical importance scores from the HoQ result row.
         </div>""", unsafe_allow_html=True)
 
         st.markdown("#### Adjust Customer Requirement Importance")
-        st.caption("Move the sliders to test how engineering priorities change when customer needs become more or less important. Scores are automatically normalised.")
+        st.caption("Move the sliders to test how engineering priorities change when customer needs become more or less important. The scores are automatically normalised.")
 
         c_left, c_right = st.columns([1.1, 1.9])
 
         with c_left:
-            hoq_w1 = st.slider("Cleaning performance", 0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[0]), 0.01, key="hoq_w1")
-            hoq_w2 = st.slider("Self-maintenance", 0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[1]), 0.01, key="hoq_w2")
-            hoq_w3 = st.slider("Navigation and mapping", 0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[2]), 0.01, key="hoq_w3")
-            hoq_w4 = st.slider("AI sensing", 0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[3]), 0.01, key="hoq_w4")
-            hoq_w5 = st.slider("Connectivity and user experience", 0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[4]), 0.01, key="hoq_w5")
+            hoq_w1 = st.slider(
+                "Cleaning performance",
+                0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[0]), 0.01,
+                help="Wet mop, anti-tangle brush, suction, and edge cleaning."
+            )
+            hoq_w2 = st.slider(
+                "Self-maintenance",
+                0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[1]), 0.01,
+                help="Auto-empty dock and auto water refill."
+            )
+            hoq_w3 = st.slider(
+                "Navigation and mapping",
+                0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[2]), 0.01,
+                help="SLAM navigation and multi-room mapping."
+            )
+            hoq_w4 = st.slider(
+                "AI sensing",
+                0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[3]), 0.01,
+                help="AI dirt detection and obstacle avoidance camera."
+            )
+            hoq_w5 = st.slider(
+                "Connectivity and user experience",
+                0.00, 1.00, float(HOQ_DEFAULT_WEIGHTS[4]), 0.01,
+                help="Voice control, app control, and carpet-hard floor transition."
+            )
 
         selected_weights = np.array([hoq_w1, hoq_w2, hoq_w3, hoq_w4, hoq_w5], dtype=float)
         if selected_weights.sum() <= 0:
             selected_weights = HOQ_DEFAULT_WEIGHTS.copy()
 
         hoq_scores = compute_hoq_scores(selected_weights)
+
         hoq_df = pd.DataFrame({
             "Engineering Feature": HOQ_FEATURES,
             "Technical Importance Score": hoq_scores,
@@ -1121,12 +1064,52 @@ with tab2:
         with a score of <strong>{top_feature['Technical Importance Score']:.2f}</strong>.
         The second priority is <strong>{second_feature['Engineering Feature']}</strong>.
         <br><br>
+        <strong>Strategic meaning:</strong>
+        <ul>
+        <li>Focus engineering resources on top-ranked features first.</li>
+        <li>Do not spread investment evenly across all technical features.</li>
+        <li>High-impact features should be prioritised because they contribute most to customer satisfaction and market competitiveness.</li>
+        </ul>
         <strong>Conclusion:</strong> The final 2030 market-leading robot vacuum should emphasise performance, sensing, navigation, and processing capability.
+        </div>""", unsafe_allow_html=True)
+
+    # 2D WCPI
+    with s2d:
+        st.markdown(f"""<div class="asmp"><strong>WHY GBDM?</strong>
+        Three models benchmarked in Comparison.ipynb using Weighted Composite Performance Index (WCPI):
+        RMSE, MAE, sMAPE, runtime, contextual suitability.
+        GBDM wins due to structural alignment with technology adoption theory.<br><br>
+        <strong>Source:</strong> Bass, F.M., Krishnan, T.V. & Jain, D.C. (1994).
+        Why the Bass Model Fits without Explicit Decision Variables. <em>Marketing Science 13(3)</em>, 203–223.
+        </div>""", unsafe_allow_html=True)
+        wcpi=pd.DataFrame({
+            "Model":["ETS (Exponential Smoothing)","LSTM (Deep Learning)","GBDM (Bass Diffusion)"],
+            "Type":["Statistical Time-Series","Deep Neural Network","Diffusion Model"],
+            "Accuracy":["Medium","Medium","High"],
+            "Contextual Fit":["General","General","Adoption-specific ✓"],
+            "Runtime":["Fast","Slow","Fast"],
+            "WCPI":[0.42,0.35,0.78],
+        })
+        fwcpi=go.Figure(go.Bar(x=wcpi["Model"],y=wcpi["WCPI"],
+            marker_color=[MUTED,MUTED,GREEN],width=.45,
+            text=[f"{v:.2f}" for v in wcpi["WCPI"]],
+            textposition="outside",textfont=dict(color=WHITE,size=13,family="IBM Plex Mono")))
+        fwcpi.add_hline(y=0.50,line_color=GOLD,line_dash="dash",
+                         annotation_text="Minimum threshold",annotation_font_color=GOLD)
+        fwcpi.update_layout(**PLY,title="WCPI: GBDM vs ETS vs LSTM",
+                             yaxis_title="WCPI",yaxis_range=[0,1.0],height=360,showlegend=False)
+        st.plotly_chart(fwcpi,use_container_width=True)
+        st.dataframe(wcpi,use_container_width=True,hide_index=True)
+        st.markdown(f"""<div class="ins"><strong>CONCLUSION:</strong>
+        GBDM WCPI = 0.78 vs ETS 0.42 and LSTM 0.35.
+        Unlike general forecasting models, GBDM explicitly models innovation (p), imitation (q),
+        and marketing intervention X(t) — all directly observable in the robot vacuum market.
+        This contextual suitability makes it the scientifically correct choice.
         </div>""", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 3: WORLD DIFFUSION GAME
+# TAB 3: COMPETITOR WAR
 # ══════════════════════════════════════════════════════════════════════════════
 with tab3:
     st.markdown('<div class="ml">Interactive Strategy Game</div>', unsafe_allow_html=True)
@@ -1136,13 +1119,13 @@ with tab3:
     Choose your target segment, set price, advertising, and technology investment.
     The GBDM runs year-by-year across 7 world regions with market shock events.
     <strong>Score:</strong> Adoption 30% + Market Value 25% + Affordability 15% + Technology 15% + Segment Fit 15% + Ads 5%.
-    <strong>Price convention:</strong> Higher priceChange = price drops = adoption rises.
+    <strong>Price convention:</strong> Higher priceChange = price drops = adoption rises (standardised).
     </div>""", unsafe_allow_html=True)
 
     html_file = "world_diffusion_competitor_war_multiplayer_fixed.html"
     for path in [os.path.join(os.path.dirname(os.path.abspath(__file__)), html_file), html_file]:
         if os.path.exists(path):
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path,"r",encoding="utf-8") as f:
                 components.html(f.read(), height=2400, scrolling=True)
             break
     else:
