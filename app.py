@@ -844,7 +844,7 @@ with tab2:
     st.markdown('<div class="ml">Analysis Hub</div>', unsafe_allow_html=True)
     st.markdown('<div class="mt">Monte Carlo · Sensitivity · AHP · WCPI Model Justification</div>', unsafe_allow_html=True)
 
-    s2d, s2abc, s2hoq = st.tabs(["Weighted Composite Performance Index (WCPI)?", "Analysis", "Feature Utility Modelling (WTP)"])
+    s2d, s2abc, s2hoq = st.tabs(["Weighted Composite Performance Index (WCPI)", "Analysis", "Feature Utility Modelling (WTP)"])
 
 # 2D WCPI
     with s2d:
