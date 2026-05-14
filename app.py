@@ -854,7 +854,7 @@ with tab2:
         </div>""", unsafe_allow_html=True)
 
         mc_seg = st.selectbox("Segment", edited["Segment"].tolist(), key="mc")
-        mc_n   = st.select_slider("Simulations", [100, 200,300, ,400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000], 100)
+        mc_n   = st.select_slider("Simulations", [100, 200,300 ,400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000], 100)
         mr = edited[edited["Segment"]==mc_seg].iloc[0]
         mX = x_factor(mr["alpha"],mr["beta"],mr["gamma"],price_change,ad_change,tech_change)
         mc_p = {"H_total":H_total,"f_urban":mr["f_urban"],"f_suitability":mr["f_suitability"],
