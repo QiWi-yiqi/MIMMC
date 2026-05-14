@@ -844,7 +844,7 @@ with tab2:
     st.markdown('<div class="ml">Analysis Hub</div>', unsafe_allow_html=True)
     st.markdown('<div class="mt">Monte Carlo · Sensitivity · AHP · WCPI Model Justification</div>', unsafe_allow_html=True)
 
-    s2d, s2abc, s2hoq = st.tabs(["WCPI — Why GBDM?", "Analysis (Monte Carlo, Sensitivity & AHP)", "Feature Utility Modelling (WTP)"])
+    s2d, s2abc, s2hoq = st.tabs(["Weighted Composite Performance Index (WCPI)", "Analysis", "Feature Utility Modelling (WTP)"])
 
 # 2D WCPI
     with s2d:
@@ -879,42 +879,30 @@ with tab2:
         and marketing intervention X(t) — all directly observable in the robot vacuum market.
         This contextual suitability makes it the scientifically correct choice.
         </div>""", unsafe_allow_html=True)
-  
-    # 2A Monte Carlo
-    with s2abc:
-        st.markdown(f"""<div class="asmp"><strong>METHOD (Updated.ipynb monte_carlo_sensitive):</strong>
-        Perturbs: f_urban ±10% (most sensitive), Affordability score ±10%, p ±15%, q ±15%, X(t) ±8%.
-        Normal distribution, clipped to [0.05, 1.0] for f-factors.
-        </div>""", unsafe_allow_html=True)
 
-        mc_seg = st.selectbox("Segment", edited["Segment"].tolist(), key="mc")
-        mc_n   = st.select_slider("Simulations", [100, 200,300 ,400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000], 100)
-        mr = edited[edited["Segment"]==mc_seg].iloc[0]
-        mX = x_factor(mr["alpha"],mr["beta"],mr["gamma"],price_change,ad_change,tech_change)
-        mc_p = {"H_total":H_total,"f_urban":mr["f_urban"],"f_suitability":mr["f_suitability"],
-                "Affordability score":mr["Affordability score"],"p":mr["p"],"q":mr["q"],"X":mX}
-        with st.spinner(f"Running {mc_n:,} simulations…"):
-            mcr = monte_carlo(mc_p, n=mc_n)
-        if len(mcr)==0: st.error("No valid outcomes."); st.stop()
-        p5,p25,p50,p75,p95 = [np.percentile(mcr,x) for x in [5,25,50,75,95]]
-        cc=st.columns(5)
-        for col,(lbl,val) in zip(cc,[("Bear 5%",p5),("Low 25%",p25),("Base 50%",p50),("High 75%",p75),("Bull 95%",p95)]):
-            col.metric(lbl,f"{val:.2f}M")
-        fm=go.Figure()
-        fm.add_trace(go.Histogram(x=mcr,nbinsx=50,marker_color=BORDER,opacity=.8))
-        for val,lbl,col in [(p5,"Bear",RED),(p50,"Base",GOLD),(p95,"Bull",GREEN)]:
-            fm.add_vline(x=val,line_color=col,line_dash="dash",
-                          annotation_text=f"<b>{lbl}</b><br>{val:.2f}M",
-                          annotation_font_color=col,annotation_font_size=10)
-        fm.update_layout(**PLY,title=f"Monte Carlo: {mc_seg} ({mc_n:,} runs)",
-                          xaxis_title="2030 Adoption (M)",yaxis_title="Frequency",height=370,showlegend=False)
-        st.plotly_chart(fm,use_container_width=True)
-        ci_w=p95-p5; rv=ci_w*price_map[mr["Product"]]/1000
-        st.markdown(f"""<div class="ins"><strong>DECISION:</strong>
-        Bear case {p5:.2f}M units → ${p5*price_map[mr['Product']]/1000:.2f}B revenue.
-        90% CI width: {ci_w:.2f}M units ≈ ${rv:.2f}B revenue uncertainty.
-        Downside remains viable — product launch justified even under adverse scenarios.</div>""",
-        unsafe_allow_html=True)
+    # -- 2A AHP Decision -------------------------------------------------
+        st.markdown(f"""<div class="asmp"><strong>AHP — Eigenvalue Method (Saaty, 1980) from Updated.ipynb Cell 34.</strong>
+        Uses numpy.linalg.eig(). CR must be &lt; 0.10 for valid pairwise matrix.
+        Weights are derived — NOT hardcoded.</div>""", unsafe_allow_html=True)
+        cr_b = f'<span class="crok">CR={ahp_CR:.4f} ✓</span>' if ahp_CR<0.10 else f'<span class="crbd">CR={ahp_CR:.4f} ✗</span>'
+        st.markdown(f'<div class="ml">Main Criteria Matrix — λ_max={ahp_lmax:.4f}  CI={ahp_CI:.4f}  {cr_b}</div>', unsafe_allow_html=True)
+        fw=go.Figure(go.Bar(x=ahp_df["Weight_%"],y=ahp_df["Criterion"],orientation="h",
+            marker_color=[GREEN,GOLD,"#4ECDC4",RED],
+            text=[f"{v:.2f}%" for v in ahp_df["Weight_%"]],
+            textposition="outside",textfont=dict(color=WHITE,size=10)))
+        fw.update_layout(**PLY,title="AHP Main Criteria Priority Weights",xaxis_title="Weight (%)",height=260,showlegend=False)
+        st.plotly_chart(fw,use_container_width=True)
+        st.markdown('<hr class="r">', unsafe_allow_html=True)
+        hcr_b = f'<span class="crok">CR={hsg_CR:.4f} ✓</span>' if hsg_CR<0.10 else f'<span class="crbd">CR={hsg_CR:.4f} ✗</span>'
+        st.markdown(f'<div class="ml">Housing Sub-Criteria — λ_max={hsg_lmax:.4f}  {hcr_b}</div>', unsafe_allow_html=True)
+        st.markdown('<hr class="r"><div class="ml">AHP Product Ranking</div>', unsafe_allow_html=True)
+        prs=pr.sort_values("AHP_Score",ascending=True)
+        far=go.Figure(go.Bar(x=prs["AHP_Score"],y=prs["Segment"],orientation="h",
+            marker_color=[GREEN if s==best["Segment"] else "#2B6A9F" for s in prs["Segment"]],
+            text=[f"{v:.4f}" for v in prs["AHP_Score"]],
+            textposition="outside",textfont=dict(color=WHITE,size=10)))
+        far.update_layout(**PLY,title="Final AHP Priority Score",xaxis_title="Score",height=360,showlegend=False)
+        st.plotly_chart(far,use_container_width=True)
 
     # -- 2B Sensitivity --------------------------------------------------
         st.markdown("""<div class="asmp">
@@ -985,30 +973,43 @@ with tab2:
                           xaxis_title="Change in 2030 Adoption (%)",
                           height=tornado_h, showlegend=False)
         st.plotly_chart(ft, use_container_width=True)
+  
+    # 2C Monte Carlo
+    with s2abc:
+        st.markdown(f"""<div class="asmp"><strong>METHOD (Updated.ipynb monte_carlo_sensitive):</strong>
+        Perturbs: f_urban ±10% (most sensitive), Affordability score ±10%, p ±15%, q ±15%, X(t) ±8%.
+        Normal distribution, clipped to [0.05, 1.0] for f-factors.
+        </div>""", unsafe_allow_html=True)
 
-    # -- 2C AHP Decision -------------------------------------------------
-        st.markdown(f"""<div class="asmp"><strong>AHP — Eigenvalue Method (Saaty, 1980) from Updated.ipynb Cell 34.</strong>
-        Uses numpy.linalg.eig(). CR must be &lt; 0.10 for valid pairwise matrix.
-        Weights are derived — NOT hardcoded.</div>""", unsafe_allow_html=True)
-        cr_b = f'<span class="crok">CR={ahp_CR:.4f} ✓</span>' if ahp_CR<0.10 else f'<span class="crbd">CR={ahp_CR:.4f} ✗</span>'
-        st.markdown(f'<div class="ml">Main Criteria Matrix — λ_max={ahp_lmax:.4f}  CI={ahp_CI:.4f}  {cr_b}</div>', unsafe_allow_html=True)
-        fw=go.Figure(go.Bar(x=ahp_df["Weight_%"],y=ahp_df["Criterion"],orientation="h",
-            marker_color=[GREEN,GOLD,"#4ECDC4",RED],
-            text=[f"{v:.2f}%" for v in ahp_df["Weight_%"]],
-            textposition="outside",textfont=dict(color=WHITE,size=10)))
-        fw.update_layout(**PLY,title="AHP Main Criteria Priority Weights",xaxis_title="Weight (%)",height=260,showlegend=False)
-        st.plotly_chart(fw,use_container_width=True)
-        st.markdown('<hr class="r">', unsafe_allow_html=True)
-        hcr_b = f'<span class="crok">CR={hsg_CR:.4f} ✓</span>' if hsg_CR<0.10 else f'<span class="crbd">CR={hsg_CR:.4f} ✗</span>'
-        st.markdown(f'<div class="ml">Housing Sub-Criteria — λ_max={hsg_lmax:.4f}  {hcr_b}</div>', unsafe_allow_html=True)
-        st.markdown('<hr class="r"><div class="ml">AHP Product Ranking</div>', unsafe_allow_html=True)
-        prs=pr.sort_values("AHP_Score",ascending=True)
-        far=go.Figure(go.Bar(x=prs["AHP_Score"],y=prs["Segment"],orientation="h",
-            marker_color=[GREEN if s==best["Segment"] else "#2B6A9F" for s in prs["Segment"]],
-            text=[f"{v:.4f}" for v in prs["AHP_Score"]],
-            textposition="outside",textfont=dict(color=WHITE,size=10)))
-        far.update_layout(**PLY,title="Final AHP Priority Score",xaxis_title="Score",height=360,showlegend=False)
-        st.plotly_chart(far,use_container_width=True)
+        mc_seg = st.selectbox("Segment", edited["Segment"].tolist(), key="mc")
+        mc_n   = st.select_slider("Simulations", [100, 200,300 ,400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000], 100)
+        mr = edited[edited["Segment"]==mc_seg].iloc[0]
+        mX = x_factor(mr["alpha"],mr["beta"],mr["gamma"],price_change,ad_change,tech_change)
+        mc_p = {"H_total":H_total,"f_urban":mr["f_urban"],"f_suitability":mr["f_suitability"],
+                "Affordability score":mr["Affordability score"],"p":mr["p"],"q":mr["q"],"X":mX}
+        with st.spinner(f"Running {mc_n:,} simulations…"):
+            mcr = monte_carlo(mc_p, n=mc_n)
+        if len(mcr)==0: st.error("No valid outcomes."); st.stop()
+        p5,p25,p50,p75,p95 = [np.percentile(mcr,x) for x in [5,25,50,75,95]]
+        cc=st.columns(5)
+        for col,(lbl,val) in zip(cc,[("Bear 5%",p5),("Low 25%",p25),("Base 50%",p50),("High 75%",p75),("Bull 95%",p95)]):
+            col.metric(lbl,f"{val:.2f}M")
+        fm=go.Figure()
+        fm.add_trace(go.Histogram(x=mcr,nbinsx=50,marker_color=BORDER,opacity=.8))
+        for val,lbl,col in [(p5,"Bear",RED),(p50,"Base",GOLD),(p95,"Bull",GREEN)]:
+            fm.add_vline(x=val,line_color=col,line_dash="dash",
+                          annotation_text=f"<b>{lbl}</b><br>{val:.2f}M",
+                          annotation_font_color=col,annotation_font_size=10)
+        fm.update_layout(**PLY,title=f"Monte Carlo: {mc_seg} ({mc_n:,} runs)",
+                          xaxis_title="2030 Adoption (M)",yaxis_title="Frequency",height=370,showlegend=False)
+        st.plotly_chart(fm,use_container_width=True)
+        ci_w=p95-p5; rv=ci_w*price_map[mr["Product"]]/1000
+        st.markdown(f"""<div class="ins"><strong>DECISION:</strong>
+        Bear case {p5:.2f}M units → ${p5*price_map[mr['Product']]/1000:.2f}B revenue.
+        90% CI width: {ci_w:.2f}M units ≈ ${rv:.2f}B revenue uncertainty.
+        Downside remains viable — product launch justified even under adverse scenarios.</div>""",
+        unsafe_allow_html=True)
+
 
     # 2D House of Quality -------------------------------------------------
     with s2hoq:
