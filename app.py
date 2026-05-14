@@ -695,16 +695,58 @@ st.markdown(f"""
 # TABS
 # ══════════════════════════════════════════════════════════════════════════════
 tab1, tab2, tab3 = st.tabs([
+    "WCPI — Why GBDM?",
     "Forecast & Recommendation",
-    "Analysis & Model Validation",
-    "Competitor War Game",
+    "Analysis",
 ])
 
 
+
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1
+# TAB 1: WCPI — WHY GBDM?
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
+    st.markdown('<div class="ml">Model Justification</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mt">WCPI — Why GBDM?</div>', unsafe_allow_html=True)
+
+    st.markdown(f"""<div class="asmp"><strong>WHY GBDM?</strong>
+    Three models are benchmarked using Weighted Composite Performance Index (WCPI):
+    RMSE, MAE, sMAPE, runtime, and contextual suitability.
+    GBDM wins because it directly explains technology-adoption behaviour through innovation,
+    imitation, market potential, and intervention effects.<br><br>
+    <strong>Source:</strong> Bass, F.M., Krishnan, T.V. & Jain, D.C. (1994).
+    Why the Bass Model Fits without Explicit Decision Variables. <em>Marketing Science 13(3)</em>, 203–223.
+    </div>""", unsafe_allow_html=True)
+
+    wcpi=pd.DataFrame({
+        "Model":["ETS (Exponential Smoothing)","LSTM (Deep Learning)","GBDM (Bass Diffusion)"],
+        "Type":["Statistical Time-Series","Deep Neural Network","Diffusion Model"],
+        "Accuracy":["Medium","Medium","High"],
+        "Contextual Fit":["General","General","Adoption-specific ✓"],
+        "Runtime":["Fast","Slow","Fast"],
+        "WCPI":[0.42,0.35,0.78],
+    })
+    fwcpi=go.Figure(go.Bar(x=wcpi["Model"],y=wcpi["WCPI"],
+        marker_color=[MUTED,MUTED,GREEN],width=.45,
+        text=[f"{v:.2f}" for v in wcpi["WCPI"]],
+        textposition="outside",textfont=dict(color=WHITE,size=13,family="IBM Plex Mono")))
+    fwcpi.add_hline(y=0.50,line_color=GOLD,line_dash="dash",
+                     annotation_text="Minimum threshold",annotation_font_color=GOLD)
+    fwcpi.update_layout(**PLY,title="WCPI: GBDM vs ETS vs LSTM",
+                         yaxis_title="WCPI",yaxis_range=[0,1.0],height=360,showlegend=False)
+    st.plotly_chart(fwcpi,use_container_width=True)
+    st.dataframe(wcpi,use_container_width=True,hide_index=True)
+    st.markdown(f"""<div class="ins"><strong>CONCLUSION:</strong>
+    GBDM WCPI = 0.78 vs ETS 0.42 and LSTM 0.35.
+    Unlike general forecasting models, GBDM explicitly models innovation (p), imitation (q),
+    market potential (M), and marketing intervention X(t). This matches the competition question,
+    which asks for future market leadership and product adoption by 2030.
+    </div>""", unsafe_allow_html=True)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 2: FORECAST & RECOMMENDATION
+# ══════════════════════════════════════════════════════════════════════════════
+with tab2:
 
     # Assumptions
     st.markdown(f"""<div class="asmp"><strong>MODEL SETTINGS IN SIMPLE WORDS:</strong><br>
@@ -784,8 +826,20 @@ with tab1:
         line=dict(color=RED,width=3),marker=dict(size=7)))
     fp.add_trace(go.Scatter(x=[px2[ki]],y=[py2[ki]],mode='markers',name='Knee-Point (Optimal)',
         marker=dict(color=GOLD,size=16,symbol='star')))
-    fp.update_layout(**PLY,title='Pareto Frontier: Adoption vs Profitability (Knee-Point Compromise)',
-                      xaxis_title='Market Adoption (%)',yaxis_title='Profit ($M)',height=420)
+    fp.update_layout(
+        **PLY,
+        title='Pareto Frontier: Adoption vs Profitability (Knee-Point Compromise)',
+        xaxis_title='Market Adoption (%)',
+        yaxis_title='Profit ($M)',
+        height=420,
+        margin=dict(l=50, r=190, t=50, b=40),
+        legend=dict(
+            x=1.14, y=1.00, xanchor='left', yanchor='top',
+            bgcolor='rgba(255,255,255,.96)',
+            bordercolor=BORDER, borderwidth=1,
+            font=dict(color=WHITE, size=10),
+        ),
+    )
     st.plotly_chart(fp,use_container_width=True)
     st.markdown(f'<div class="ins"><strong>KNEE-POINT OPTIMUM:</strong> The starred point identifies the '
                 f'product configuration balancing adoption and profitability. Points left trade '
@@ -838,13 +892,13 @@ with tab1:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 2: ANALYSIS HUB
+# TAB 3: ANALYSIS HUB
 # ══════════════════════════════════════════════════════════════════════════════
-with tab2:
+with tab3:
     st.markdown('<div class="ml">Analysis Hub</div>', unsafe_allow_html=True)
-    st.markdown('<div class="mt">Monte Carlo · Sensitivity · AHP · WCPI Model Justification</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mt">AHP · Sensitivity · Monte Carlo · Housing / House of Quality</div>', unsafe_allow_html=True)
 
-    s2abc, s2hoq, s2d = st.tabs(["Analysis (Monte Carlo, Sensitivity & AHP)", "House of Quality", "WCPI — Why GBDM?"])
+    s2abc, s2hoq = st.tabs(["Analysis: Monte Carlo · Sensitivity · AHP", "Housing / House of Quality"])
 
     # 2A Monte Carlo
     with s2abc:
@@ -854,7 +908,7 @@ with tab2:
         </div>""", unsafe_allow_html=True)
 
         mc_seg = st.selectbox("Segment", edited["Segment"].tolist(), key="mc")
-        mc_n   = st.select_slider("Simulations", [200,500,1000,2000], 500)
+        mc_n   = st.slider("Simulations", min_value=200, max_value=2000, value=500, step=100)
         mr = edited[edited["Segment"]==mc_seg].iloc[0]
         mX = x_factor(mr["alpha"],mr["beta"],mr["gamma"],price_change,ad_change,tech_change)
         mc_p = {"H_total":H_total,"f_urban":mr["f_urban"],"f_suitability":mr["f_suitability"],
@@ -941,7 +995,7 @@ with tab2:
 
         ft = go.Figure(go.Bar(
             x=sd2["Impact (%)"], y=sd2["Parameter"], orientation="h",
-            marker_color=[GREEN if v>=0 else RED for v in sd2["Impact (%)"]],
+            marker_color=px.colors.sequential.Tealgrn[:len(sd2)],
             text=[f"{v:+.2f}%" for v in sd2["Impact (%)"]],
             textposition="outside", textfont=dict(color=WHITE, size=10),
         ))
@@ -1073,68 +1127,4 @@ with tab2:
         <strong>Conclusion:</strong> The final 2030 market-leading robot vacuum should emphasise performance, sensing, navigation, and processing capability.
         </div>""", unsafe_allow_html=True)
 
-    # 2D WCPI
-    with s2d:
-        st.markdown(f"""<div class="asmp"><strong>WHY GBDM?</strong>
-        Three models benchmarked in Comparison.ipynb using Weighted Composite Performance Index (WCPI):
-        RMSE, MAE, sMAPE, runtime, contextual suitability.
-        GBDM wins due to structural alignment with technology adoption theory.<br><br>
-        <strong>Source:</strong> Bass, F.M., Krishnan, T.V. & Jain, D.C. (1994).
-        Why the Bass Model Fits without Explicit Decision Variables. <em>Marketing Science 13(3)</em>, 203–223.
-        </div>""", unsafe_allow_html=True)
-        wcpi=pd.DataFrame({
-            "Model":["ETS (Exponential Smoothing)","LSTM (Deep Learning)","GBDM (Bass Diffusion)"],
-            "Type":["Statistical Time-Series","Deep Neural Network","Diffusion Model"],
-            "Accuracy":["Medium","Medium","High"],
-            "Contextual Fit":["General","General","Adoption-specific ✓"],
-            "Runtime":["Fast","Slow","Fast"],
-            "WCPI":[0.42,0.35,0.78],
-        })
-        fwcpi=go.Figure(go.Bar(x=wcpi["Model"],y=wcpi["WCPI"],
-            marker_color=[MUTED,MUTED,GREEN],width=.45,
-            text=[f"{v:.2f}" for v in wcpi["WCPI"]],
-            textposition="outside",textfont=dict(color=WHITE,size=13,family="IBM Plex Mono")))
-        fwcpi.add_hline(y=0.50,line_color=GOLD,line_dash="dash",
-                         annotation_text="Minimum threshold",annotation_font_color=GOLD)
-        fwcpi.update_layout(**PLY,title="WCPI: GBDM vs ETS vs LSTM",
-                             yaxis_title="WCPI",yaxis_range=[0,1.0],height=360,showlegend=False)
-        st.plotly_chart(fwcpi,use_container_width=True)
-        st.dataframe(wcpi,use_container_width=True,hide_index=True)
-        st.markdown(f"""<div class="ins"><strong>CONCLUSION:</strong>
-        GBDM WCPI = 0.78 vs ETS 0.42 and LSTM 0.35.
-        Unlike general forecasting models, GBDM explicitly models innovation (p), imitation (q),
-        and marketing intervention X(t) — all directly observable in the robot vacuum market.
-        This contextual suitability makes it the scientifically correct choice.
-        </div>""", unsafe_allow_html=True)
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 3: COMPETITOR WAR
-# ══════════════════════════════════════════════════════════════════════════════
-with tab3:
-    st.markdown('<div class="ml">Interactive Strategy Game</div>', unsafe_allow_html=True)
-    st.markdown('<div class="mt">Competitor War — World Diffusion Strategy Game (2024–2030)</div>', unsafe_allow_html=True)
-    st.markdown(f"""<div class="asmp">
-    <strong>HOW TO PLAY:</strong> Up to 3 companies compete to dominate the 2030 global robot vacuum market.
-    Choose your target segment, set price, advertising, and technology investment.
-    The GBDM runs year-by-year across 7 world regions with market shock events.
-    <strong>Score:</strong> Adoption 30% + Market Value 25% + Affordability 15% + Technology 15% + Segment Fit 15% + Ads 5%.
-    <strong>Price convention:</strong> Higher priceChange = price drops = adoption rises (standardised).
-    </div>""", unsafe_allow_html=True)
-
-    html_file = "world_diffusion_competitor_war_multiplayer_fixed.html"
-    for path in [os.path.join(os.path.dirname(os.path.abspath(__file__)), html_file), html_file]:
-        if os.path.exists(path):
-            with open(path,"r",encoding="utf-8") as f:
-                components.html(f.read(), height=2400, scrolling=True)
-            break
-    else:
-        st.warning(f"""**Game file not found.**  
-Place `{html_file}` in the same folder as `app.py` and restart.  
-```
-📁 your_folder/
-├── app.py
-├── {html_file}
-├── requirements.txt
-└── README.md
-```""")
