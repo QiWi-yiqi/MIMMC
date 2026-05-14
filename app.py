@@ -844,8 +844,42 @@ with tab2:
     st.markdown('<div class="ml">Analysis Hub</div>', unsafe_allow_html=True)
     st.markdown('<div class="mt">Monte Carlo · Sensitivity · AHP · WCPI Model Justification</div>', unsafe_allow_html=True)
 
-    s2abc, s2hoq, s2d = st.tabs(["Analysis (Monte Carlo, Sensitivity & AHP)", "House of Quality", "WCPI — Why GBDM?"])
+    s2d, s2abc, s2hoq = st.tabs(["WCPI — Why GBDM?", "Analysis (Monte Carlo, Sensitivity & AHP)", "Feature Utility Modelling (WTP)"])
 
+# 2D WCPI
+    with s2d:
+        st.markdown(f"""<div class="asmp"><strong>WHY GBDM?</strong>
+        Three models benchmarked in Comparison.ipynb using Weighted Composite Performance Index (WCPI):
+        RMSE, MAE, sMAPE, runtime, contextual suitability.
+        GBDM wins due to structural alignment with technology adoption theory.<br><br>
+        <strong>Source:</strong> Bass, F.M., Krishnan, T.V. & Jain, D.C. (1994).
+        Why the Bass Model Fits without Explicit Decision Variables. <em>Marketing Science 13(3)</em>, 203–223.
+        </div>""", unsafe_allow_html=True)
+        wcpi=pd.DataFrame({
+            "Model":["ETS (Exponential Smoothing)","LSTM (Deep Learning)","GBDM (Bass Diffusion)"],
+            "Type":["Statistical Time-Series","Deep Neural Network","Diffusion Model"],
+            "Accuracy":["Medium","Medium","High"],
+            "Contextual Fit":["General","General","Adoption-specific ✓"],
+            "Runtime":["Fast","Slow","Fast"],
+            "WCPI":[0.42,0.35,0.78],
+        })
+        fwcpi=go.Figure(go.Bar(x=wcpi["Model"],y=wcpi["WCPI"],
+            marker_color=[MUTED,MUTED,GREEN],width=.45,
+            text=[f"{v:.2f}" for v in wcpi["WCPI"]],
+            textposition="outside",textfont=dict(color=WHITE,size=13,family="IBM Plex Mono")))
+        fwcpi.add_hline(y=0.50,line_color=GOLD,line_dash="dash",
+                         annotation_text="Minimum threshold",annotation_font_color=GOLD)
+        fwcpi.update_layout(**PLY,title="WCPI: GBDM vs ETS vs LSTM",
+                             yaxis_title="WCPI",yaxis_range=[0,1.0],height=360,showlegend=False)
+        st.plotly_chart(fwcpi,use_container_width=True)
+        st.dataframe(wcpi,use_container_width=True,hide_index=True)
+        st.markdown(f"""<div class="ins"><strong>CONCLUSION:</strong>
+        GBDM WCPI = 0.78 vs ETS 0.42 and LSTM 0.35.
+        Unlike general forecasting models, GBDM explicitly models innovation (p), imitation (q),
+        and marketing intervention X(t) — all directly observable in the robot vacuum market.
+        This contextual suitability makes it the scientifically correct choice.
+        </div>""", unsafe_allow_html=True)
+  
     # 2A Monte Carlo
     with s2abc:
         st.markdown(f"""<div class="asmp"><strong>METHOD (Updated.ipynb monte_carlo_sensitive):</strong>
@@ -1071,40 +1105,6 @@ with tab2:
         <li>High-impact features should be prioritised because they contribute most to customer satisfaction and market competitiveness.</li>
         </ul>
         <strong>Conclusion:</strong> The final 2030 market-leading robot vacuum should emphasise performance, sensing, navigation, and processing capability.
-        </div>""", unsafe_allow_html=True)
-
-    # 2D WCPI
-    with s2d:
-        st.markdown(f"""<div class="asmp"><strong>WHY GBDM?</strong>
-        Three models benchmarked in Comparison.ipynb using Weighted Composite Performance Index (WCPI):
-        RMSE, MAE, sMAPE, runtime, contextual suitability.
-        GBDM wins due to structural alignment with technology adoption theory.<br><br>
-        <strong>Source:</strong> Bass, F.M., Krishnan, T.V. & Jain, D.C. (1994).
-        Why the Bass Model Fits without Explicit Decision Variables. <em>Marketing Science 13(3)</em>, 203–223.
-        </div>""", unsafe_allow_html=True)
-        wcpi=pd.DataFrame({
-            "Model":["ETS (Exponential Smoothing)","LSTM (Deep Learning)","GBDM (Bass Diffusion)"],
-            "Type":["Statistical Time-Series","Deep Neural Network","Diffusion Model"],
-            "Accuracy":["Medium","Medium","High"],
-            "Contextual Fit":["General","General","Adoption-specific ✓"],
-            "Runtime":["Fast","Slow","Fast"],
-            "WCPI":[0.42,0.35,0.78],
-        })
-        fwcpi=go.Figure(go.Bar(x=wcpi["Model"],y=wcpi["WCPI"],
-            marker_color=[MUTED,MUTED,GREEN],width=.45,
-            text=[f"{v:.2f}" for v in wcpi["WCPI"]],
-            textposition="outside",textfont=dict(color=WHITE,size=13,family="IBM Plex Mono")))
-        fwcpi.add_hline(y=0.50,line_color=GOLD,line_dash="dash",
-                         annotation_text="Minimum threshold",annotation_font_color=GOLD)
-        fwcpi.update_layout(**PLY,title="WCPI: GBDM vs ETS vs LSTM",
-                             yaxis_title="WCPI",yaxis_range=[0,1.0],height=360,showlegend=False)
-        st.plotly_chart(fwcpi,use_container_width=True)
-        st.dataframe(wcpi,use_container_width=True,hide_index=True)
-        st.markdown(f"""<div class="ins"><strong>CONCLUSION:</strong>
-        GBDM WCPI = 0.78 vs ETS 0.42 and LSTM 0.35.
-        Unlike general forecasting models, GBDM explicitly models innovation (p), imitation (q),
-        and marketing intervention X(t) — all directly observable in the robot vacuum market.
-        This contextual suitability makes it the scientifically correct choice.
         </div>""", unsafe_allow_html=True)
 
 
