@@ -844,7 +844,7 @@ with tab2:
     st.markdown('<div class="ml">Analysis Hub</div>', unsafe_allow_html=True)
     st.markdown('<div class="mt">Monte Carlo · Sensitivity · AHP · WCPI Model Justification</div>', unsafe_allow_html=True)
 
-    s2d, s2abc, s2hoq = st.tabs(["Weighted Composite Performance Index (WCPI)", "Analysis", "Feature Utility Modelling (WTP)"])
+    s2d, s2abc, s2hoq = st.tabs(["Weighted Composite Performance Index (WCPI)?", "Analysis", "Feature Utility Modelling (WTP)"])
 
 # 2D WCPI
     with s2d:
@@ -917,89 +917,74 @@ with tab2:
         unsafe_allow_html=True)
 
     # -- 2B Sensitivity --------------------------------------------------
-    st.markdown("""<div class="asmp">
-    <strong>METHOD:</strong> One-at-a-time +10% shock on each parameter.
-    For Floor compatibility score, House suitability score, Cleaning need score: when perturbed, f_suitability is
-    recomputed as Floor compatibility score x House suitability score x Cleaning need score before recalculating M.
-    This reveals the individual leverage of each suitability sub-component.
-    </div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="asmp">
+        <strong>METHOD:</strong> One-at-a-time +10% shock on each parameter.
+        For Floor compatibility score, House suitability score, Cleaning need score: when perturbed, f_suitability is
+        recomputed as Floor compatibility score x House suitability score x Cleaning need score before recalculating M.
+        This reveals the individual leverage of each suitability sub-component.
+        </div>""", unsafe_allow_html=True)
 
-    ss = st.selectbox("Segment", edited["Segment"].tolist(), key="sens")
-    br = edited[edited["Segment"]==ss].iloc[0]
+        ss = st.selectbox("Segment", edited["Segment"].tolist(), key="sens")
+        br = edited[edited["Segment"]==ss].iloc[0]
 
-    bM  = H_total * br["f_urban"] * br["f_suitability"] * br["Affordability score"]
-    bX  = x_factor(br["alpha"],br["beta"],br["gamma"],price_change,ad_change,tech_change)
-    b2  = run_gbdm(bM, br["p"], br["q"], bX, N0_ratio=N0_ratio)
-    b30 = b2.loc[b2["Year"]==2030,"Cumulative_Adopters"].iloc[0]
+        bM  = H_total * br["f_urban"] * br["f_suitability"] * br["Affordability score"]
+        bX  = x_factor(br["alpha"],br["beta"],br["gamma"],price_change,ad_change,tech_change)
+        b2  = run_gbdm(bM, br["p"], br["q"], bX, N0_ratio=N0_ratio)
+        b30 = b2.loc[b2["Year"]==2030,"Cumulative_Adopters"].iloc[0]
 
-    all_params = [
-        "Floor compatibility score", "House suitability score", "Cleaning need score",
-        "Affordability score", "f_urban",
-        "p", "q", "alpha", "beta", "gamma",
-        "price_change", "ad_change", "tech_change",
-    ]
+        all_params = [
+            "Floor compatibility score", "House suitability score", "Cleaning need score",
+            "Affordability score", "f_urban",
+            "p", "q", "alpha", "beta", "gamma",
+            "price_change", "ad_change", "tech_change",
+        ]
 
-    rows2 = []
-    for pm in all_params:
-        nb2 = br.copy()
-        np_ = price_change; na_ = ad_change; nt_ = tech_change
+        rows2 = []
+        for pm in all_params:
+            nb2 = br.copy()
+            np_ = price_change; na_ = ad_change; nt_ = tech_change
 
-        if pm in ["Floor compatibility score","House suitability score","Cleaning need score",
-                  "Affordability score","f_urban","p","q","beta","gamma"]:
-            nb2[pm] = nb2[pm] * 1.10
-        elif pm == "alpha":        nb2[pm] = nb2[pm] * 1.10
-        elif pm == "price_change": np_ = price_change * 1.10
-        elif pm == "ad_change":    na_ = ad_change    * 1.10
-        elif pm == "tech_change":  nt_ = tech_change  * 1.10
+            if pm in ["Floor compatibility score","House suitability score","Cleaning need score",
+                      "Affordability score","f_urban","p","q","beta","gamma"]:
+                nb2[pm] = nb2[pm] * 1.10
+            elif pm == "alpha":        nb2[pm] = nb2[pm] * 1.10
+            elif pm == "price_change": np_ = price_change * 1.10
+            elif pm == "ad_change":    na_ = ad_change    * 1.10
+            elif pm == "tech_change":  nt_ = tech_change  * 1.10
 
-        # Recompute f_suitability
-        if pm in ["Floor compatibility score","House suitability score","Cleaning need score"]:
-            new_suit = nb2["Floor compatibility score"] * nb2["House suitability score"] * nb2["Cleaning need score"]
-        else:
-            new_suit = nb2["f_suitability"]
+            # Recompute f_suitability from components when a sub-factor is perturbed
+            if pm in ["Floor compatibility score","House suitability score","Cleaning need score"]:
+                new_suit = nb2["Floor compatibility score"] * nb2["House suitability score"] * nb2["Cleaning need score"]
+            else:
+                new_suit = nb2["f_suitability"]
 
-        nM2 = H_total * nb2["f_urban"] * new_suit * nb2["Affordability score"]
-        nX2 = x_factor(nb2["alpha"],nb2["beta"],nb2["gamma"],np_,na_,nt_)
-        nR2 = run_gbdm(nM2, nb2["p"], nb2["q"], nX2, N0_ratio=N0_ratio)
-        n30 = nR2.loc[nR2["Year"]==2030,"Cumulative_Adopters"].iloc[0]
+            nM2 = H_total * nb2["f_urban"] * new_suit * nb2["Affordability score"]
+            nX2 = x_factor(nb2["alpha"],nb2["beta"],nb2["gamma"],np_,na_,nt_)
+            nR2 = run_gbdm(nM2, nb2["p"], nb2["q"], nX2, N0_ratio=N0_ratio)
+            n30 = nR2.loc[nR2["Year"]==2030,"Cumulative_Adopters"].iloc[0]
 
-        rows2.append({
-            "Parameter": pm,
-            "Baseline (M)": round(b30, 3),
-            "Shocked (M)": round(n30, 3),
-            "Impact (%)": round((n30 - b30) / b30 * 100, 3),
-        })
+            rows2.append({
+                "Parameter":    pm,
+                "Baseline (M)": round(b30, 3),
+                "Shocked (M)":  round(n30, 3),
+                "Impact (%)":   round((n30 - b30) / b30 * 100, 3),
+            })
 
-    sd2 = pd.DataFrame(rows2).sort_values("Impact (%)", key=abs, ascending=True)
-    tornado_h = max(420, len(all_params) * 34 + 80)
+        sd2 = pd.DataFrame(rows2).sort_values("Impact (%)", key=abs, ascending=True)
+        tornado_h = max(420, len(all_params) * 34 + 80)
 
-    # 🎯 NEW: multi-color based on ranking (stronger impact = brighter color)
-    tornado_colors = [
-        "#00A6D6", "#7B61FF", "#F59E0B", "#F97316", "#EC4899",
-        "#14B8A6", "#3B82F6", "#A855F7", "#06B6D4", "#FB7185",
-        "#84CC16", "#F43F5E", "#6366F1"
-    ]
-
-    ft = go.Figure(go.Bar(
-        x=sd2["Impact (%)"],
-        y=sd2["Parameter"],
-        orientation="h",
-        marker_color=tornado_colors[:len(sd2)],
-        text=[f"{v:+.2f}%" for v in sd2["Impact (%)"]],
-        textposition="outside",
-        textfont=dict(color=WHITE, size=10),
-    ))
-
-    ft.add_vline(x=0, line_color=MUTED, line_width=1)
-
-    ft.update_layout(**PLY,
-        title=f"Tornado Chart - {ss}: +10% Parameter Shock (13 parameters)",
-        xaxis_title="Change in 2030 Adoption (%)",
-        height=tornado_h,
-        showlegend=False
-    )
-
-    st.plotly_chart(ft, use_container_width=True)
+        ft = go.Figure(go.Bar(
+            x=sd2["Impact (%)"], y=sd2["Parameter"], orientation="h",
+            marker_color=[GREEN if v>=0 else RED for v in sd2["Impact (%)"]],
+            text=[f"{v:+.2f}%" for v in sd2["Impact (%)"]],
+            textposition="outside", textfont=dict(color=WHITE, size=10),
+        ))
+        ft.add_vline(x=0, line_color=MUTED, line_width=1)
+        ft.update_layout(**PLY,
+                          title=f"Tornado Chart - {ss}: +10% Parameter Shock (13 parameters)",
+                          xaxis_title="Change in 2030 Adoption (%)",
+                          height=tornado_h, showlegend=False)
+        st.plotly_chart(ft, use_container_width=True)
 
     # -- 2C AHP Decision -------------------------------------------------
         st.markdown(f"""<div class="asmp"><strong>AHP — Eigenvalue Method (Saaty, 1980) from Updated.ipynb Cell 34.</strong>
