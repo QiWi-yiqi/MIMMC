@@ -108,8 +108,9 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {{
   font-family:'Inter', sans-serif;
 }}
 
-#MainMenu, footer, header {{ 
-visibility:hidden; }}
+#MainMenu, footer {{ 
+  visibility:hidden; 
+}}
 
 .block-container {{
   padding-top:1rem!important;
