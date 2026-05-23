@@ -108,7 +108,19 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {{
   font-family:'Inter', sans-serif;
 }}
 
-#MainMenu, footer, header {{ visibility:hidden; }}
+#MainMenu, footer {{
+  visibility:hidden;
+}}
+
+/* FORCE SIDEBAR ALWAYS EXPANDED */
+[data-testid="stSidebar"] {{
+  display: block !important;
+  visibility: visible !important;
+  transform: translateX(0px) !important;
+  min-width: 320px !important;
+  max-width: 320px !important;
+  width: 320px !important;
+}}
 
 .block-container {{
   padding-top:1rem!important;
