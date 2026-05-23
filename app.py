@@ -112,25 +112,6 @@ p, span, label, div, h1, h2, h3, h4, h5, h6 {{
 </style>
 """, unsafe_allow_html=True)
 
-/* Make default Streamlit text readable */
-p, span, label, div, h1, h2, h3, h4, h5, h6 {{
-  color:var(--text);
-}}
-
-/* Top header */
-.corp-hdr {{
-  background:linear-gradient(135deg,#FFFFFF,#F4F9FF);
-  border:1px solid var(--border);
-  border-bottom:4px solid var(--gold);
-  border-radius:20px;
-  padding:22px 28px;
-  margin-bottom:18px;
-  box-shadow:0 10px 30px rgba(70,120,180,.14);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-}}
 .corp-hdr h1 {{
   font-family:'Space Grotesk',sans-serif;
   font-size:2rem;
