@@ -108,19 +108,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {{
   font-family:'Inter', sans-serif;
 }}
 
-#MainMenu, footer {{
-  visibility:hidden;
-}}
-
-/* FORCE SIDEBAR ALWAYS EXPANDED */
-[data-testid="stSidebar"] {{
-  display: block !important;
-  visibility: visible !important;
-  transform: translateX(0px) !important;
-  min-width: 320px !important;
-  max-width: 320px !important;
-  width: 320px !important;
-}}
+#MainMenu, footer, header {{ visibility:hidden; }}
 
 .block-container {{
   padding-top:1rem!important;
@@ -428,27 +416,6 @@ iframe {{
   border-radius:18px!important;
   background:{CBKG}!important;
 }}
-
-/* Remove Streamlit top white header space */
-header {{
-  display: none !important;
-}}
-
-/* Remove sidebar collapse button */
-[data-testid="stSidebarCollapseButton"],
-[data-testid="collapsedControl"],
-[data-testid="stSidebarCollapsedControl"] {{
-  display: none !important;
-  visibility: hidden !important;
-}}
-
-/* Remove sidebar collapse button */
-[data-testid="stSidebarCollapseButton"],
-[data-testid="collapsedControl"],
-[data-testid="stSidebarCollapsedControl"] {
-  display: none !important;
-  visibility: hidden !important;
-}
 
 </style>""", unsafe_allow_html=True)
 
