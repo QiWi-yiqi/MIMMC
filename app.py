@@ -139,39 +139,6 @@ p, span, label, div, h1, h2, h3, h4, h5, h6 {{
 </style>
 """, unsafe_allow_html=True)
 
-.block-container {{
-  padding-top:1rem!important;
-  padding-left:2rem!important;
-  padding-right:2rem!important;
-  max-width:1500px!important;
-}}
-
-section.main > div,
-[data-testid="stAppViewBlockContainer"],
-[data-testid="stVerticalBlock"] {{
-  background:transparent!important;
-}}
-
-p, span, label, div, h1, h2, h3, h4, h5, h6 {{
-  color:var(--text);
-}}
-
-</style>
-""", unsafe_allow_html=True)
-
-.block-container {
-  padding-top:1rem!important;
-  padding-left:2rem!important;
-  padding-right:2rem!important;
-  max-width:1500px!important;
-}
-
-section.main > div,
-[data-testid="stAppViewBlockContainer"],
-[data-testid="stVerticalBlock"] {{
-  background:transparent!important;
-}}
-
 /* Make default Streamlit text readable */
 p, span, label, div, h1, h2, h3, h4, h5, h6 {{
   color:var(--text);
