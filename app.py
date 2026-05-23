@@ -108,16 +108,21 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {{
   font-family:'Inter', sans-serif;
 }}
 
-#MainMenu, footer {{ 
+#MainMenu, footer { 
   visibility:hidden; 
-}}
+}
 
-.block-container {{
+/* Hide top white toolbar */
+[data-testid="stToolbar"] {
+    display: none !important;
+}
+
+.block-container {
   padding-top:1rem!important;
   padding-left:2rem!important;
   padding-right:2rem!important;
   max-width:1500px!important;
-}}
+}
 
 section.main > div,
 [data-testid="stAppViewBlockContainer"],
