@@ -81,8 +81,7 @@ PLY = dict(
 )
 
 # ── CSS: fully visible light theme ───────────────────────────────────────────
-st.markdown(f"""
-<style>
+st.markdown(f"""<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {{
@@ -109,27 +108,22 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {{
   font-family:'Inter', sans-serif;
 }}
 
-#MainMenu, footer {{
-  visibility:hidden;
-}}
-
-[data-testid="stToolbar"] {{
-  display:none !important;
-}}
+#MainMenu, footer, header {{ visibility:hidden; }}
 
 .block-container {{
-  padding-top:1rem !important;
-  padding-left:2rem !important;
-  padding-right:2rem !important;
-  max-width:1500px !important;
+  padding-top:1rem!important;
+  padding-left:2rem!important;
+  padding-right:2rem!important;
+  max-width:1500px!important;
 }}
 
 section.main > div,
 [data-testid="stAppViewBlockContainer"],
 [data-testid="stVerticalBlock"] {{
-  background:transparent !important;
+  background:transparent!important;
 }}
 
+/* Make default Streamlit text readable */
 p, span, label, div, h1, h2, h3, h4, h5, h6 {{
   color:var(--text);
 }}
@@ -423,22 +417,7 @@ iframe {{
   background:{CBKG}!important;
 }}
 
-[data-testid="collapsedControl"] {{
-    visibility: visible !important;
-    display: flex !important;
-    opacity: 1 !important;
-    position: fixed !important;
-    top: 16px !important;
-    left: 16px !important;
-    z-index: 999999 !important;
-    background: #FFFFFF !important;
-    border: 1px solid #A8CFF0 !important;
-    border-radius: 10px !important;
-    box-shadow: 0 4px 12px rgba(60,120,180,.18) !important;
-}}
-
-</style>
-""", unsafe_allow_html=True)
+</style>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MATH ENGINE
