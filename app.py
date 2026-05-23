@@ -437,6 +437,34 @@ iframe {{
     box-shadow: 0 4px 12px rgba(60,120,180,.18) !important;
 }}
 
+/* Remove top white header space but keep sidebar arrow */
+header {{
+  background: transparent !important;
+  height: 0rem !important;
+  min-height: 0rem !important;
+  visibility: visible !important;
+}}
+
+[data-testid="stToolbar"] {{
+  display: none !important;
+}}
+
+[data-testid="collapsedControl"],
+[data-testid="stSidebarCollapsedControl"] {{
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: fixed !important;
+  top: 12px !important;
+  left: 12px !important;
+  z-index: 999999 !important;
+  background: #FFFFFF !important;
+  border: 1px solid #A8CFF0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(60,120,180,.18) !important;
+  pointer-events: auto !important;
+}}
+
 </style>
 """, unsafe_allow_html=True)
 
