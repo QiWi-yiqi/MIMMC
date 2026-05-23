@@ -81,6 +81,39 @@ PLY = dict(
 )
 
 # ── CSS: fully visible light theme ───────────────────────────────────────────
+st.markdown("""
+<style>
+
+/* 🚨 REMOVE ENTIRE TOP BAR (this is the real fix) */
+[data-testid="stAppViewContainer"] > div:first-child {
+    display: none !important;
+}
+
+/* REMOVE HEADER TOOLBAR (Share, etc.) */
+header {
+    display: none !important;
+}
+
+/* REMOVE ANY REMAINING TOOLBAR SPACE */
+[data-testid="stToolbar"] {
+    display: none !important;
+}
+
+/* REMOVE TOP PADDING COMPLETELY */
+.block-container {
+    padding-top: 0rem !important;
+}
+
+/* EXTRA HARD FIX (sometimes needed) */
+section.main > div {
+    padding-top: 0rem !important;
+    margin-top: 0rem !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
 st.markdown(f"""<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
