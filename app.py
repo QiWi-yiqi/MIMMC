@@ -108,9 +108,13 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {{
   font-family:'Inter', sans-serif;
 }}
 
-#MainMenu, footer { 
+#MainMenu, footer {{ 
   visibility:hidden; 
-}
+}}
+
+[data-testid="stToolbar"] {{
+  display:none !important;
+}}
 
 /* Hide top white toolbar */
 [data-testid="stToolbar"] {
