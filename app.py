@@ -423,48 +423,16 @@ iframe {{
   background:{CBKG}!important;
 }}
 
-[data-testid="collapsedControl"] {{
-    visibility: visible !important;
-    display: flex !important;
-    opacity: 1 !important;
-    position: fixed !important;
-    top: 16px !important;
-    left: 16px !important;
-    z-index: 999999 !important;
-    background: #FFFFFF !important;
-    border: 1px solid #A8CFF0 !important;
-    border-radius: 10px !important;
-    box-shadow: 0 4px 12px rgba(60,120,180,.18) !important;
-}}
-
-/* Remove top white header space but keep sidebar arrow */
-/* Keep Streamlit sidebar arrow visible, but remove toolbar icons */
+/* Sidebar reopen arrow only */
 header {{
+  visibility: visible !important;
   background: transparent !important;
-  visibility: visible !important;
-  height: 2.5rem !important;
-  min-height: 2.5rem !important;
 }}
 
 [data-testid="stToolbar"] {{
   display: none !important;
 }}
 
-[data-testid="collapsedControl"],
-[data-testid="stSidebarCollapsedControl"],
-[data-testid="stSidebarCollapseButton"] {{
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 999999 !important;
-  pointer-events: auto !important;
-}}
-
-[data-testid="stToolbar"] {{
-  display: none !important;
-}}
-
-[data-testid="collapsedControl"],
 [data-testid="stSidebarCollapsedControl"] {{
   display: flex !important;
   visibility: visible !important;
@@ -473,10 +441,6 @@ header {{
   top: 12px !important;
   left: 12px !important;
   z-index: 999999 !important;
-  background: #FFFFFF !important;
-  border: 1px solid #A8CFF0 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 12px rgba(60,120,180,.18) !important;
   pointer-events: auto !important;
 }}
 
