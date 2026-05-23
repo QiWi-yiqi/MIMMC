@@ -84,15 +84,12 @@ PLY = dict(
 st.markdown(f"""
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+html, body {{
+    background:
+        linear-gradient(135deg, #EEF6FF 0%, #F8FBFF 50%, #EAF4FF 100%) !important;
+}}
 
-/* ===== YOUR EXISTING DESIGN CSS BELOW ===== */
-/* (keep everything you already have) */
-
-
-/* ===== FIX SIDEBAR (ADD THIS PART ONLY) ===== */
-
-/* Collapse sidebar but KEEP toggle arrow */
+/* Sidebar fix */
 [data-testid="stSidebar"] {{
     min-width: 0px !important;
     max-width: 0px !important;
@@ -100,7 +97,6 @@ st.markdown(f"""
     overflow: hidden;
 }}
 
-/* Keep toggle button visible */
 [data-testid="collapsedControl"] {{
     display: block !important;
     position: fixed;
@@ -111,6 +107,7 @@ st.markdown(f"""
 
 </style>
 """, unsafe_allow_html=True)
+
 :root {{
   --bg:{NAVY};
   --bg2:{CBKG};
