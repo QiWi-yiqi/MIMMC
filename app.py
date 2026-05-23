@@ -80,10 +80,37 @@ PLY = dict(
     margin=dict(l=50, r=30, t=50, b=40),
 )
 
-# ── CSS: fully visible light theme ───────────────────────────────────────────
-st.markdown(f"""<style>
+#CSS
+st.markdown(f"""
+<style>
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
+/* ===== YOUR EXISTING DESIGN CSS BELOW ===== */
+/* (keep everything you already have) */
+
+
+/* ===== FIX SIDEBAR (ADD THIS PART ONLY) ===== */
+
+/* Collapse sidebar but KEEP toggle arrow */
+[data-testid="stSidebar"] {{
+    min-width: 0px !important;
+    max-width: 0px !important;
+    width: 0px !important;
+    overflow: hidden;
+}}
+
+/* Keep toggle button visible */
+[data-testid="collapsedControl"] {{
+    display: block !important;
+    position: fixed;
+    top: 20px;
+    left: 10px;
+    z-index: 9999;
+}}
+
+</style>
+""", unsafe_allow_html=True)
 :root {{
   --bg:{NAVY};
   --bg2:{CBKG};
