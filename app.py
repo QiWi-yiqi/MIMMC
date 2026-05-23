@@ -80,33 +80,33 @@ PLY = dict(
     margin=dict(l=50, r=30, t=50, b=40),
 )
 
-#CSS
-st.markdown("""
-<style>
+# ── CSS: fully visible light theme ───────────────────────────────────────────
+st.markdown(f"""<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
-html, body, .stApp, [data-testid="stAppViewContainer"] {
-    background:
-        linear-gradient(135deg, #EEF6FF 0%, #F8FBFF 50%, #EAF4FF 100%) !important;
-}
+:root {{
+  --bg:{NAVY};
+  --bg2:{CBKG};
+  --panel:{PANEL};
+  --panel2:{PANEL2};
+  --border:{BORDER};
+  --text:{WHITE};
+  --muted:{MUTED};
+  --cyan:{CYAN};
+  --green:{GREEN};
+  --gold:{GOLD};
+  --orange:{ORANGE};
+  --red:{RED};
+}}
 
-/* Sidebar collapse but keep arrow */
-[data-testid="stSidebar"] {
-    min-width: 0px !important;
-    max-width: 0px !important;
-    width: 0px !important;
-    overflow: hidden;
-}
-
-[data-testid="collapsedControl"] {
-    display: block !important;
-    position: fixed;
-    top: 20px;
-    left: 10px;
-    z-index: 9999;
-}
-
-</style>
-""", unsafe_allow_html=True)
+html, body, .stApp, [data-testid="stAppViewContainer"] {{
+  background:
+    radial-gradient(circle at top left, rgba(0,166,214,.13), transparent 26%),
+    radial-gradient(circle at top right, rgba(245,158,11,.10), transparent 22%),
+    linear-gradient(135deg, #EEF6FF 0%, #F8FBFF 50%, #EAF4FF 100%) !important;
+  color:var(--text) !important;
+  font-family:'Inter', sans-serif;
+}}
 
 #MainMenu, footer, header {{ visibility:hidden; }}
 
