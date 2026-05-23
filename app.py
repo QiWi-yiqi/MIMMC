@@ -81,11 +81,49 @@ PLY = dict(
 )
 
 # ── CSS: fully visible light theme ───────────────────────────────────────────
-st.markdown(f"""
-<style>
+st.markdown(f"""<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
-/* your existing CSS above */
+:root {{
+  --bg:{NAVY};
+  --bg2:{CBKG};
+  --panel:{PANEL};
+  --panel2:{PANEL2};
+  --border:{BORDER};
+  --text:{WHITE};
+  --muted:{MUTED};
+  --cyan:{CYAN};
+  --green:{GREEN};
+  --gold:{GOLD};
+  --orange:{ORANGE};
+  --red:{RED};
+}}
 
+html, body, .stApp, [data-testid="stAppViewContainer"] {{
+  background:
+    radial-gradient(circle at top left, rgba(0,166,214,.13), transparent 26%),
+    radial-gradient(circle at top right, rgba(245,158,11,.10), transparent 22%),
+    linear-gradient(135deg, #EEF6FF 0%, #F8FBFF 50%, #EAF4FF 100%) !important;
+  color:var(--text) !important;
+  font-family:'Inter', sans-serif;
+}}
+
+#MainMenu, footer, header {{ visibility:hidden; }}
+
+.block-container {{
+  padding-top:1rem!important;
+  padding-left:2rem!important;
+  padding-right:2rem!important;
+  max-width:1500px!important;
+}}
+
+section.main > div,
+[data-testid="stAppViewBlockContainer"],
+[data-testid="stVerticalBlock"] {{
+  background:transparent!important;
+}}
+
+/* Make default Streamlit text readable */
 p, span, label, div, h1, h2, h3, h4, h5, h6 {{
   color:var(--text);
 }}
@@ -104,14 +142,6 @@ p, span, label, div, h1, h2, h3, h4, h5, h6 {{
   justify-content:space-between;
   gap:16px;
 }}
-
-/* continue ALL your CSS here */
-
-/* DO NOT close string until ALL CSS is finished */
-
-</style>
-""", unsafe_allow_html=True)
-
 .corp-hdr h1 {{
   font-family:'Space Grotesk',sans-serif;
   font-size:2rem;
