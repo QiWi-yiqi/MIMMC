@@ -419,6 +419,26 @@ iframe {{
 
 </style>""", unsafe_allow_html=True)
 
+
+# Keep Streamlit sidebar open/close arrow visible
+st.markdown("""
+<style>
+[data-testid="collapsedControl"] {
+    visibility: visible !important;
+    display: flex !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    top: 16px !important;
+    left: 16px !important;
+    z-index: 999999 !important;
+    background: #FFFFFF !important;
+    border: 1px solid #A8CFF0 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 12px rgba(60,120,180,.18) !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ══════════════════════════════════════════════════════════════════════════════
 # MATH ENGINE
 # ══════════════════════════════════════════════════════════════════════════════
