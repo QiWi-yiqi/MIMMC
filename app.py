@@ -108,30 +108,6 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 </style>
 """, unsafe_allow_html=True)
 
-:root {{
-  --bg:{NAVY};
-  --bg2:{CBKG};
-  --panel:{PANEL};
-  --panel2:{PANEL2};
-  --border:{BORDER};
-  --text:{WHITE};
-  --muted:{MUTED};
-  --cyan:{CYAN};
-  --green:{GREEN};
-  --gold:{GOLD};
-  --orange:{ORANGE};
-  --red:{RED};
-}}
-
-html, body, .stApp, [data-testid="stAppViewContainer"] {{
-  background:
-    radial-gradient(circle at top left, rgba(0,166,214,.13), transparent 26%),
-    radial-gradient(circle at top right, rgba(245,158,11,.10), transparent 22%),
-    linear-gradient(135deg, #EEF6FF 0%, #F8FBFF 50%, #EAF4FF 100%) !important;
-  color:var(--text) !important;
-  font-family:'Inter', sans-serif;
-}}
-
 #MainMenu, footer, header {{ visibility:hidden; }}
 
 .block-container {{
