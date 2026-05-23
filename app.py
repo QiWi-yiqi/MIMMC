@@ -429,6 +429,27 @@ iframe {{
   background:{CBKG}!important;
 }}
 
+/* Remove Streamlit top white header space */
+header {{
+  display: none !important;
+}}
+
+/* Remove sidebar collapse button */
+[data-testid="stSidebarCollapseButton"],
+[data-testid="collapsedControl"],
+[data-testid="stSidebarCollapsedControl"] {{
+  display: none !important;
+  visibility: hidden !important;
+}}
+
+/* Remove sidebar collapse button */
+[data-testid="stSidebarCollapseButton"],
+[data-testid="collapsedControl"],
+[data-testid="stSidebarCollapsedControl"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
 </style>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
