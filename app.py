@@ -81,7 +81,8 @@ PLY = dict(
 )
 
 # ── CSS: fully visible light theme ───────────────────────────────────────────
-st.markdown(f"""<style>
+st.markdown(f"""
+<style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {{
@@ -108,18 +109,35 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {{
   font-family:'Inter', sans-serif;
 }}
 
+/* Hide menu + footer only. DO NOT hide header because sidebar arrow is inside header */
 #MainMenu, footer {{ 
   visibility:hidden; 
 }}
 
+/* Hide top toolbar white space */
 [data-testid="stToolbar"] {{
   display:none !important;
 }}
 
-/* Hide top white toolbar */
-[data-testid="stToolbar"] {
-    display: none !important;
-}
+.block-container {{
+  padding-top:1rem!important;
+  padding-left:2rem!important;
+  padding-right:2rem!important;
+  max-width:1500px!important;
+}}
+
+section.main > div,
+[data-testid="stAppViewBlockContainer"],
+[data-testid="stVerticalBlock"] {{
+  background:transparent!important;
+}}
+
+p, span, label, div, h1, h2, h3, h4, h5, h6 {{
+  color:var(--text);
+}}
+
+</style>
+""", unsafe_allow_html=True)
 
 .block-container {
   padding-top:1rem!important;
