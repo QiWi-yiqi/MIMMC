@@ -83,58 +83,31 @@ PLY = dict(
 # ── CSS: fully visible light theme ───────────────────────────────────────────
 st.markdown(f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
-:root {{
-  --bg:{NAVY};
-  --bg2:{CBKG};
-  --panel:{PANEL};
-  --panel2:{PANEL2};
-  --border:{BORDER};
-  --text:{WHITE};
-  --muted:{MUTED};
-  --cyan:{CYAN};
-  --green:{GREEN};
-  --gold:{GOLD};
-  --orange:{ORANGE};
-  --red:{RED};
-}}
-
-html, body, .stApp, [data-testid="stAppViewContainer"] {{
-  background:
-    radial-gradient(circle at top left, rgba(0,166,214,.13), transparent 26%),
-    radial-gradient(circle at top right, rgba(245,158,11,.10), transparent 22%),
-    linear-gradient(135deg, #EEF6FF 0%, #F8FBFF 50%, #EAF4FF 100%) !important;
-  color:var(--text) !important;
-  font-family:'Inter', sans-serif;
-}}
-
-/* Hide menu + footer only */
-#MainMenu, footer {{ 
-  visibility:hidden; 
-}}
-
-/* Hide top toolbar */
-[data-testid="stToolbar"] {{
-  display:none !important;
-}}
-
-.block-container {{
-  padding-top:1rem !important;
-  padding-left:2rem !important;
-  padding-right:2rem !important;
-  max-width:1500px !important;
-}}
-
-section.main > div,
-[data-testid="stAppViewBlockContainer"],
-[data-testid="stVerticalBlock"] {{
-  background:transparent !important;
-}}
+/* your existing CSS above */
 
 p, span, label, div, h1, h2, h3, h4, h5, h6 {{
   color:var(--text);
 }}
+
+/* Top header */
+.corp-hdr {{
+  background:linear-gradient(135deg,#FFFFFF,#F4F9FF);
+  border:1px solid var(--border);
+  border-bottom:4px solid var(--gold);
+  border-radius:20px;
+  padding:22px 28px;
+  margin-bottom:18px;
+  box-shadow:0 10px 30px rgba(70,120,180,.14);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}}
+
+/* continue ALL your CSS here */
+
+/* DO NOT close string until ALL CSS is finished */
 
 </style>
 """, unsafe_allow_html=True)
