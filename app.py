@@ -81,29 +81,29 @@ PLY = dict(
 )
 
 #CSS
-st.markdown(f"""
+st.markdown("""
 <style>
 
-html, body {{
+html, body, .stApp, [data-testid="stAppViewContainer"] {
     background:
         linear-gradient(135deg, #EEF6FF 0%, #F8FBFF 50%, #EAF4FF 100%) !important;
-}}
+}
 
-/* Sidebar fix */
-[data-testid="stSidebar"] {{
+/* Sidebar collapse but keep arrow */
+[data-testid="stSidebar"] {
     min-width: 0px !important;
     max-width: 0px !important;
     width: 0px !important;
     overflow: hidden;
-}}
+}
 
-[data-testid="collapsedControl"] {{
+[data-testid="collapsedControl"] {
     display: block !important;
     position: fixed;
     top: 20px;
     left: 10px;
     z-index: 9999;
-}}
+}
 
 </style>
 """, unsafe_allow_html=True)
