@@ -438,11 +438,26 @@ iframe {{
 }}
 
 /* Remove top white header space but keep sidebar arrow */
+/* Keep Streamlit sidebar arrow visible, but remove toolbar icons */
 header {{
   background: transparent !important;
-  height: 0rem !important;
-  min-height: 0rem !important;
   visibility: visible !important;
+  height: 2.5rem !important;
+  min-height: 2.5rem !important;
+}}
+
+[data-testid="stToolbar"] {{
+  display: none !important;
+}}
+
+[data-testid="collapsedControl"],
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stSidebarCollapseButton"] {{
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 999999 !important;
+  pointer-events: auto !important;
 }}
 
 [data-testid="stToolbar"] {{
