@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Diffusion Competitor War 2030 - 3 Players</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 3D globe (feature 6) and QR (feature 5). Need internet; 2D map is the offline fallback. -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
+
+  <!-- Optional online multiplayer support. Fill firebaseConfig below to activate. -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #f8fafc;
+      background: radial-gradient(circle at top, #1e3a8a 0%, #111827 50%, #020617 100%);
+      overflow-x: hidden;
+    }
+    .app { max-width: 1680px; margin: auto; padding: 16px 18px 26px; }
+
+    /* === Sticky transport bar: always-visible controls that drive the sim === */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border-radius: 20px;
+      background: rgba(8,15,35,0.72);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+    }
+    .topbar .brand { font-size: 20px; font-weight: 900; margin-right: 6px; white-space: nowrap; }
+    .topbar .brand small { display:block; font-size: 11px; font-weight: 600; color:#93c5fd; }
+    .topbar .spacer { flex: 1 1 auto; }
+    .topbar button { padding: 10px 13px; font-size: 13px; border-radius: 13px; box-shadow: none; }
+    .year-pill {
+      padding: 8px 14px; border-radius: 999px; font-weight: 900; font-size: 14px;
+      background: rgba(34,197,94,0.18); border: 1px solid rgba(34,197,94,0.4); white-space: nowrap;
+    }
+
+    /* === Player control deck: three cards side by side across the top === */
+    .deck {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    /* === Results dashboard: full-width stacked stage === */
+    .dashboard { display: flex; flex-direction: column; gap: 16px; }
+    /* === Secondary controls in one tidy row === */
+    .controls-row {
+      display: grid;
+      grid-template-columns: 0.9fr 1.4fr 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    .panel {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.28);
+      backdrop-filter: blur(10px);
+    }
+    h1 { margin: 0 0 8px; font-size: 40px; }
+    h2 { margin: 0 0 14px; font-size: 22px; }
+    .deck .panel h2, .controls-row .panel h2 { font-size: 18px; margin: 0 0 10px; }
+    h3 { margin: 0 0 8px; }
+    p { line-height: 1.5; }
+    .subtitle { color: #dbeafe; font-size: 16px; }
+    .controls-row .subtitle { font-size: 13px; }
+    .btn-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+    button {
+      border: none;
+      padding: 13px 14px;
+      border-radius: 16px;
+      font-weight: 800;
+      color: white;
+      cursor: pointer;
+      background: linear-gradient(135deg, #22c55e, #06b6d4);
+      box-shadow: 0 10px 28px rgba(34,197,94,0.24);
+    }
+    button:active { transform: scale(0.98); }
+    .purple { background: linear-gradient(135deg, #6366f1, #ec4899); }
+    .orange { background: linear-gradient(135deg, #f97316, #eab308); }
+    .red { background: linear-gradient(135deg, #ef4444, #f97316); }
+    .blue { background: linear-gradient(135deg, #2563eb, #06b6d4); }
+    .ghost { background: rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.18); box-shadow:none; }
+    .game-grid { display: contents; }
+    .controls label {
+      display: block;
+      margin-top: 12px;
+      color: #dbeafe;
+      font-weight: bold;
+    }
+    select, input[type="range"], input[type="text"] {
+      width: 100%;
+      margin-top: 7px;
+    }
+    select, input[type="text"] {
+      padding: 10px;
+      border-radius: 12px;
+      border: none;
+      background: #e2e8f0;
+      color: #0f172a;
+      font-weight: bold;
+    }
+    .value { float: right; color: #67e8f9; }
+    .p1-border { border-color: rgba(96,165,250,0.45); }
+    .p2-border { border-color: rgba(244,114,182,0.45); }
+    .p3-border { border-color: rgba(34,197,94,0.45); }
+    .online-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .online-box input, .online-box select { margin: 0; }
+    .mission-card { cursor: pointer; transition: 0.25s; }
+    .mission-card:hover { transform: translateY(-2px); border-color: rgba(103,232,249,0.5); }
+    .tips {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(14,165,233,0.14);
+      border: 1px solid rgba(14,165,233,0.35);
+      display: none;
+    }
+    .world {
+      margin-top: 0;
+      position: relative;
+      min-height: 560px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(59,130,246,0.22), transparent 20%),
+        radial-gradient(circle at 78% 40%, rgba(236,72,153,0.18), transparent 22%),
+        radial-gradient(circle at 55% 70%, rgba(34,197,94,0.14), transparent 22%),
+        linear-gradient(180deg, rgba(15,23,42,0.9), rgba(30,41,59,0.92));
+    }
+    .map-line {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(103,232,249,0.65), transparent);
+      animation: moveLine 4s infinite linear;
+      opacity: 0.5;
+    }
+    @keyframes moveLine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .region {
+      position: absolute;
+      width: 200px;
+      min-height: 138px;
+      border-radius: 22px;
+      padding: 14px;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.14);
+      transition: 0.45s ease;
+      overflow: hidden;
+    }
+    .region:hover { transform: scale(1.04); }
+    /* region label boxes overlaid on the 3D globe */
+    .globe-region-label {
+      font-family: inherit;
+      background: rgba(255,255,255,0.94);
+      border: 1px solid rgba(120,170,220,0.65);
+      border-radius: 14px;
+      padding: 6px 12px;
+      color: #102A43;
+      box-shadow: 0 8px 20px rgba(40,90,150,0.30);
+      text-align: center;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.4s ease;
+      white-space: nowrap;
+      user-select: none;
+      pointer-events: none;
+    }
+    .globe-region-label .gr-emoji { font-size: 17px; line-height: 1; }
+    .globe-region-label .gr-name  { display:block; font-size: 12px; font-weight: 800; margin-top: 2px; color:#0b2a4a; }
+    .region.active-p1 { box-shadow: 0 0 28px rgba(96,165,250,0.75); border-color: rgba(96,165,250,0.8); background: rgba(37,99,235,0.26); }
+    .region.active-p2 { box-shadow: 0 0 28px rgba(244,114,182,0.75); border-color: rgba(244,114,182,0.8); background: rgba(219,39,119,0.26); }
+    .region.active-p3 { box-shadow: 0 0 28px rgba(34,197,94,0.75); border-color: rgba(34,197,94,0.8); background: rgba(22,163,74,0.24); }
+    .region.contested { box-shadow: 0 0 32px rgba(250,204,21,0.85); border-color: rgba(250,204,21,0.85); background: rgba(202,138,4,0.25); }
+    .region .emoji { font-size: 27px; }
+    .region .name { font-size: 14px; color: #e0f2fe; font-weight: 900; margin-top: 3px; }
+    .region .numbers { font-size: 12px; color: #cbd5e1; margin-top: 8px; line-height: 1.45; }
+    .region .leader { font-size: 12px; font-weight: 900; margin-top: 8px; }
+    .pulse {
+      position: absolute;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      animation: pulse 1.4s infinite;
+      right: 12px; top: 12px;
+      background: #22c55e;
+    }
+    @keyframes pulse { 0% { transform: scale(0.8); opacity:0.9; } 100% { transform: scale(2.5); opacity:0; } }
+    .robot {
+      position: absolute;
+      z-index: 3;
+      font-size: 48px;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4));
+    }
+    .robot.p1 { animation: p1move 9s infinite linear; }
+    .robot.p2 { animation: p2move 9s infinite linear; }
+    .robot.p3 { animation: p3move 9s infinite linear; }
+    @keyframes p1move { 0% { left:8%; top:70%; } 20% { left:18%; top:28%; } 40% { left:42%; top:45%; } 60% { left:64%; top:30%; } 80% { left:78%; top:62%; } 100% { left:8%; top:70%; } }
+    @keyframes p2move { 0% { right:8%; top:70%; } 20% { right:18%; top:28%; } 40% { right:42%; top:45%; } 60% { right:64%; top:30%; } 80% { right:78%; top:62%; } 100% { right:8%; top:70%; } }
+    @keyframes p3move { 0% { left:48%; top:74%; } 20% { left:72%; top:42%; } 40% { left:52%; top:20%; } 60% { left:30%; top:44%; } 80% { left:18%; top:70%; } 100% { left:48%; top:74%; } }
+    .score-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 0;
+    }
+    .score-box {
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 20px;
+      padding: 16px;
+    }
+    .score-box h3 { font-size: 18px; }
+    .score-box .score { font-size: 34px; font-weight: 900; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+      gap: 10px;
+      margin-top: 0;
+    }
+    .kpi {
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+    .kpi span { display:block; color:#cbd5e1; font-size: 12px; }
+    .kpi b { display:block; font-size: 20px; margin-top: 6px; }
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 0;
+    }
+    canvas { background: rgba(255,255,255,0.96); border-radius: 18px; padding: 12px; }
+    .winner-box {
+      margin-top: 0;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(34,197,94,0.14);
+      border: 1px solid rgba(34,197,94,0.35);
+      font-weight: 900;
+      font-size: 19px;
+    }
+    .event-card {
+      margin-top: 0;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(251,191,36,0.15);
+      border: 1px solid rgba(251,191,36,0.38);
+      font-weight: bold;
+    }
+    .badge {
+      display: inline-block;
+      margin: 6px 6px 0 0;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(34,197,94,0.18);
+      border: 1px solid rgba(34,197,94,0.35);
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .hidden { display: none !important; }
+
+    /* ---- new feature styles ---- */
+    .nlbar { display:flex; align-items:center; gap:8px; flex:1 1 360px; min-width:260px;
+      background:#0C1638; border:1px solid rgba(34,211,238,0.5); border-radius:18px; padding:6px 8px 6px 14px; }
+    .nlbar input { flex:1; background:transparent; border:none; color:#E8EEF7; font-size:13.5px; outline:none; margin:0; }
+    .nlbar button { padding:7px 12px; font-size:12px; border-radius:12px; box-shadow:none; }
+    #qrBox { width:48px; height:48px; background:#fff; border-radius:8px; padding:3px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    #qrBox img, #qrBox canvas { width:42px !important; height:42px !important; }
+    .scrubwrap { display:flex; align-items:center; gap:14px; padding:12px 18px; margin-bottom:16px;
+      border-radius:18px; background:rgba(8,15,35,0.6); border:1px solid rgba(255,255,255,0.12); }
+    .scrubwrap label { color:#22D3EE; font-weight:800; font-size:12px; letter-spacing:2px; white-space:nowrap; }
+    #scrubber { flex:1; accent-color:#22D3EE; margin:0; }
+    .scrubwrap .yr { font-weight:900; color:#fff; font-size:15px; min-width:52px; text-align:center; }
+    #globeViz { width:100%; height:520px; display:flex; align-items:center; justify-content:center; }
+    .sharebar { display:flex; height:34px; border-radius:9px; overflow:hidden; border:1px solid rgba(255,255,255,0.12); }
+    .sharebar > div { display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff; min-width:0; transition:flex-basis .4s ease; }
+    .toggle-pill { display:inline-flex; align-items:center; gap:6px; padding:9px 13px; border-radius:14px; font-size:12.5px; font-weight:800;
+      background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.2); color:#E8EEF7; cursor:pointer; }
+    .toggle-pill.on { background:linear-gradient(135deg,#6366f1,#06b6d4); border-color:transparent; }
+
+    /* ---- v6 rail layout + zoned sections ---- */
+    .cockpit2 { display:grid; grid-template-columns:372px 1fr; gap:16px; align-items:start; }
+    .setup-rail { position:sticky; top:14px; max-height:calc(100vh - 28px); overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding-right:4px; }
+    .setup-rail::-webkit-scrollbar { width:8px; } .setup-rail::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.18); border-radius:8px; }
+    .setup-rail .game-grid { display:flex; flex-direction:column; gap:12px; }
+    .setup-rail .panel { padding:14px; border-radius:16px; }
+    .setup-rail .controls label { margin-top:9px; font-size:13px; }
+    .setup-rail .controls input[type="range"] { margin-top:4px; }
+    .right-col { display:flex; flex-direction:column; gap:14px; }
+    .zone-band { display:flex; align-items:center; gap:10px; padding:9px 15px; border-radius:13px; font-weight:800; font-size:12.5px; letter-spacing:1.5px;
+      background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); }
+    .zone-band .num { width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#0A1230; font-weight:900; font-size:13px; }
+    .zone-band small { font-weight:600; letter-spacing:0; opacity:0.7; margin-left:4px; }
+    .zone-band.setup { border-color:#8B5CF6; color:#c4b5fd; } .zone-band.setup .num { background:#8B5CF6; }
+    .zone-band.run { border-color:#F5A623; color:#fcd9a0; } .zone-band.run .num { background:#F5A623; }
+    .zone-band.results { border-color:#22D3EE; color:#a5f0fb; } .zone-band.results .num { background:#22D3EE; }
+    .run-band { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:12px 16px; border-radius:18px; background:rgba(8,15,35,0.6); border:1px solid rgba(255,255,255,0.12); }
+    .run-band .scrubwrap { flex:1 1 320px; margin:0; border:none; background:transparent; padding:0; }
+    .results-top { display:grid; grid-template-columns:1.65fr 1fr; gap:14px; align-items:start; }
+    .results-side { display:flex; flex-direction:column; gap:14px; }
+    @media (max-width:1150px){ .cockpit2 { grid-template-columns:1fr; } .setup-rail { position:static; max-height:none; } .results-top { grid-template-columns:1fr; } }
+    @media (max-width: 1150px) {
+      .deck { grid-template-columns: 1fr; }
+      .controls-row { grid-template-columns: 1fr; }
+      .charts, .score-row, .online-box { grid-template-columns: 1fr; }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .btn-row { grid-template-columns: 1fr; }
+      .world { min-height: 950px; }
+      .region { position: relative; left: auto !important; top: auto !important; margin: 12px 0; width: 100%; }
+      .robot { display:none; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== Sticky transport bar: the controls you press repeatedly ===== -->
+  <div class="topbar">
+    <div class="brand">🌍 World Diffusion War 2030<small>GBDM competitive simulator · Team MIMMC_10</small></div>
+    <div class="nlbar">
+      <input id="nlInput" type="text" placeholder="Tell it: &quot;drop P1 to 500 and max its tech&quot;" onkeydown="if(event.key==='Enter')runCommand()">
+      <button class="blue" onclick="runCommand()">Send</button>
+    </div>
+    <div id="qrBox" title="Scan to open the live app"></div>
+    <span class="year-pill">Year <b id="yearKpi">2024</b></span>
+    <div class="spacer"></div>
+    <button class="purple" onclick="setMode(1)">👤 1P</button>
+    <button class="orange" onclick="setMode(2)">⚔️ 2P</button>
+    <button class="blue" onclick="setMode(3)">🌐 3P</button>
+    <span class="toggle-pill on" id="compToggle" onclick="toggleCompetitive()">⚔️ Competitive</span>
+  </div>
+
+  <div class="cockpit2">
+
+    <!-- ============ LEFT RAIL = SETUP ============ -->
+    <aside class="setup-rail">
+      <div class="zone-band setup"><span class="num">1</span> SETUP <small>· what you configure</small></div>
+
+      <div class="game-grid">
+        <div class="panel controls p1-border" id="p1Panel">
+          <h2>🔵 Player 1 Manufacturer</h2>
+          <label>Company Name</label><input id="p1Company" type="text" value="RoboClean X" oninput="playerChanged('p1')">
+          <label>Player Head</label><select id="p1Head" onchange="playerChanged('p1')"><option>🤖</option><option>🧑‍💼</option><option>👩‍💼</option><option>🦾</option><option>🚀</option></select>
+          <label>Target Segment</label><select id="p1Segment" onchange="playerChanged('p1')"></select>
+          <label>Price <span class="value" id="p1PriceVal"></span></label><input id="p1Price" type="range" min="200" max="1200" step="10" value="650" oninput="playerChanged('p1')">
+          <label>Advertisement <span class="value" id="p1AdVal"></span></label><input id="p1Ad" type="range" min="0" max="0.60" step="0.01" value="0.40" oninput="playerChanged('p1')">
+          <label>Technology Upgrade <span class="value" id="p1TechVal"></span></label><input id="p1Tech" type="range" min="0" max="0.50" step="0.01" value="0.30" oninput="playerChanged('p1')">
+          <label>Price Attractiveness <span class="value" id="p1PriceChangeVal"></span></label><input id="p1PriceChange" type="range" min="0" max="0.20" step="0.01" value="0.04" oninput="playerChanged('p1')">
+        </div>
+        <div class="panel controls p2-border" id="p2Panel">
+          <h2>🟣 Player 2 Manufacturer</h2>
+          <label>Company Name</label><input id="p2Company" type="text" value="SmartSweep AI" oninput="playerChanged('p2')">
+          <label>Player Head</label><select id="p2Head" onchange="playerChanged('p2')"><option>🦾</option><option>🤖</option><option>🧑‍💼</option><option>👩‍💼</option><option>🚀</option></select>
+          <label>Target Segment</label><select id="p2Segment" onchange="playerChanged('p2')"></select>
+          <label>Price <span class="value" id="p2PriceVal"></span></label><input id="p2Price" type="range" min="200" max="1200" step="10" value="420" oninput="playerChanged('p2')">
+          <label>Advertisement <span class="value" id="p2AdVal"></span></label><input id="p2Ad" type="range" min="0" max="0.60" step="0.01" value="0.25" oninput="playerChanged('p2')">
+          <label>Technology Upgrade <span class="value" id="p2TechVal"></span></label><input id="p2Tech" type="range" min="0" max="0.50" step="0.01" value="0.18" oninput="playerChanged('p2')">
+          <label>Price Attractiveness <span class="value" id="p2PriceChangeVal"></span></label><input id="p2PriceChange" type="range" min="0" max="0.20" step="0.01" value="0.08" oninput="playerChanged('p2')">
+        </div>
+        <div class="panel controls p3-border" id="p3Panel">
+          <h2>🟢 Player 3 Manufacturer</h2>
+          <label>Company Name</label><input id="p3Company" type="text" value="NeoFloor Robotics" oninput="playerChanged('p3')">
+          <label>Player Head</label><select id="p3Head" onchange="playerChanged('p3')"><option>🚀</option><option>🤖</option><option>🦾</option><option>🧑‍💼</option><option>👩‍💼</option></select>
+          <label>Target Segment</label><select id="p3Segment" onchange="playerChanged('p3')"></select>
+          <label>Price <span class="value" id="p3PriceVal"></span></label><input id="p3Price" type="range" min="200" max="1200" step="10" value="580" oninput="playerChanged('p3')">
+          <label>Advertisement <span class="value" id="p3AdVal"></span></label><input id="p3Ad" type="range" min="0" max="0.60" step="0.01" value="0.32" oninput="playerChanged('p3')">
+          <label>Technology Upgrade <span class="value" id="p3TechVal"></span></label><input id="p3Tech" type="range" min="0" max="0.50" step="0.01" value="0.38" oninput="playerChanged('p3')">
+          <label>Price Attractiveness <span class="value" id="p3PriceChangeVal"></span></label><input id="p3PriceChange" type="range" min="0" max="0.20" step="0.01" value="0.06" oninput="playerChanged('p3')">
+        </div>
+      </div>
+
+      <div class="panel controls">
+        <h2>🌪️ Market Shock</h2>
+        <select id="shock" onchange="globalChanged()">
+          <option value="1.00">Normal Market</option>
+          <option value="0.85">Economic Recession</option>
+          <option value="1.20">AI Technology Breakthrough</option>
+          <option value="1.15">Post-Pandemic Hygiene Boost</option>
+          <option value="0.90">High Competition</option>
+        </select>
+        <h2 style="margin-top:16px;">🌐 Online Match</h2>
+        <div class="online-box">
+          <input id="roomId" type="text" value="mimmc-room" placeholder="Room ID">
+          <select id="myPlayerSlot"><option value="p1">I am Player 1</option><option value="p2">I am Player 2</option><option value="p3">I am Player 3</option></select>
+          <button class="blue" onclick="connectOnline()">Connect</button>
+        </div>
+        <p class="subtitle" id="onlineStatus" style="margin-top:8px;">Online mode: Off. Local mode works immediately.</p>
+      </div>
+    </aside>
+
+    <!-- ============ RIGHT COLUMN = RUN + RESULTS ============ -->
+    <main class="right-col">
+
+      <div class="zone-band run"><span class="num">2</span> RUN <small>· what you do</small></div>
+      <div class="run-band">
+        <div class="scrubwrap">
+          <label>TIMELINE</label>
+          <span class="yr">2025</span>
+          <input id="scrubber" type="range" min="2024" max="2030" step="1" value="2024" oninput="scrubTo(this.value)">
+          <span class="yr" id="scrubYear">2024</span>
+        </div>
+        <button onclick="autoPlay()">⚡ Auto</button>
+        <button class="red" onclick="resetGame()">↺ Reset</button>
+        <button class="ghost" onclick="loadRecommendation()">🏁 Our 2030 Winner</button>
+      </div>
+
+      <div class="zone-band results"><span class="num">3</span> RESULTS <small>· what you see</small></div>
+
+      <div class="results-top">
+        <div class="panel world" id="worldPanel">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">🛰️ Live Adoption Globe</h2>
+            <span class="toggle-pill on" id="globeToggle" onclick="toggleGlobeView()">🌐 3D</span>
+          </div>
+          <div id="globeViz"></div>
+          <div id="map2d" class="hidden" style="position:relative; min-height:520px;">
+            <div class="map-line" style="top:18%; left:0; width:100%;"></div>
+            <div class="map-line" style="top:48%; left:0; width:100%; animation-delay:1s;"></div>
+            <div class="map-line" style="top:78%; left:0; width:100%; animation-delay:2s;"></div>
+            <div class="robot p1" id="p1Robot">🤖</div>
+            <div class="robot p2" id="p2Robot">🦾</div>
+            <div class="robot p3" id="p3Robot">🚀</div>
+            <div id="regions"></div>
+          </div>
+        </div>
+
+        <div class="results-side">
+          <div class="panel" id="sharePanel">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <h2 style="margin:0 0 4px;">⚔️ Competitive Market</h2>
+              <span class="subtitle" id="shareNote" style="font-size:12px;">one shared pool</span>
+            </div>
+            <div class="sharebar" id="shareBar"></div>
+          </div>
+          <div class="winner-box" id="winnerText">Reset state: no product has entered the market yet. Press Auto or scrub the timeline.</div>
+          <div class="panel">
+            <h2>🧠 Market Strategist</h2>
+            <p class="subtitle" id="advisorHint">Reads the board and gives instant strategic analysis.</p>
+            <button class="blue" style="width:100%;" onclick="askStrategist()">🧠 Analyse the Board</button>
+            <div class="tips" id="advisorBox" style="display:none; white-space:pre-wrap;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><span>P1 Adoption</span><b id="p1AdoptionKpi">0M</b></div>
+        <div class="kpi"><span>P2 Adoption</span><b id="p2AdoptionKpi">0M</b></div>
+        <div class="kpi"><span>P3 Adoption</span><b id="p3AdoptionKpi">0M</b></div>
+        <div class="kpi"><span>P1 Value</span><b id="p1ValueKpi">$0B</b></div>
+        <div class="kpi"><span>P2 Value</span><b id="p2ValueKpi">$0B</b></div>
+        <div class="kpi"><span>P3 Value</span><b id="p3ValueKpi">$0B</b></div>
+      </div>
+
+      <div class="score-row" id="scoreRow"></div>
+
+      <div class="panel">
+        <h2>🎯 Scoring (AHP weights)</h2>
+        <div class="event-card" id="eventText">Market Event: Normal Market</div>
+        <div id="badges"></div>
+        <p class="subtitle" id="missionText" style="margin-top:10px;">Winner Score uses our AHP weights:</p>
+        <div class="tips" id="tipsBox" style="display:block;">
+          🤖 Technological attractiveness — <b>51.98%</b> &nbsp; 📈 Market adoption — <b>26.77%</b> &nbsp; 💸 Price — <b>14.95%</b> &nbsp; 📢 Advertising — <b>6.30%</b> &nbsp; <span style="opacity:0.75">CR = 0.011</span>
+        </div>
+      </div>
+
+      <div class="charts">
+        <div class="panel"><h2>📈 Adoption Forecast (90% MC band)</h2><canvas id="adoptionChart"></canvas></div>
+        <div class="panel"><h2>💰 2030 Market Value</h2><canvas id="valueChart"></canvas></div>
+      </div>
+      <div class="charts">
+        <div class="panel"><h2>🎯 Target Demographic 2030 Outcome</h2><canvas id="targetChart"></canvas></div>
+        <div class="panel"><h2>🏆 Winner Score (AHP-weighted)</h2><canvas id="scoreChart"></canvas></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+const H_TOTAL = 3091;
+const START_YEAR = 2024;
+const FIRST_MARKET_YEAR = 2025;
+const END_YEAR = 2030;
+let currentYear = START_YEAR;
+let playerMode = 2;
+let adoptionChart, valueChart, targetChart, scoreChart;
+let onlineRef = null;
+let isApplyingRemote = false;
+let autoTimer = null;
+let competitiveMode = true;   // feature 2: shared-pool competition (default ON)
+let globeMode = true;         // feature 6: 3D globe vs 2D map fallback
+let globeInstance = null;
+let lastShare = null;
+
+// =============================
+// Optional Firebase setup
+// Fill this to make real online play work across devices.
+// Keep blank for local-only mode.
+// =============================
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDVUXkCQ45SCkvjXIEpVCGmnwaS0LnY7ms",
+  authDomain: "mimmc-game.firebaseapp.com",
+  databaseURL: "https://mimmc-game-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId: "mimmc-game",
+  storageBucket: "mimmc-game.firebasestorage.app",
+  messagingSenderId: "987304376664",
+  appId: "1:987304376664:web:0d0d21c6cfb1dba330cd2d",
+  measurementId: "G-10ET77FY7E"
+};
+
+function firebaseReady() {
+  return firebaseConfig.apiKey && firebaseConfig.databaseURL;
+}
+
+const segments = [
+ {id:1, name:'Urban Apartment Basic', area:'Urban', house:'Apartment', product:'Basic', f_urban:0.40, f_flooring:0.97, f_dwelling:0.98, f_cleaning_need:0.98, f_suitability:0.93, f_affordability:0.85, p:0.015, q:0.45, alpha:-2.2, beta:0.3, gamma:1.0},
+ {id:2, name:'Urban Apartment Advanced', area:'Urban', house:'Apartment', product:'Advanced', f_urban:0.40, f_flooring:0.97, f_dwelling:1.00, f_cleaning_need:0.98, f_suitability:0.95, f_affordability:0.45, p:0.040, q:0.35, alpha:-1.2, beta:0.5, gamma:1.5},
+ {id:3, name:'Urban Landed Basic', area:'Urban', house:'Landed', product:'Basic', f_urban:0.40, f_flooring:0.85, f_dwelling:0.85, f_cleaning_need:0.98, f_suitability:0.71, f_affordability:0.85, p:0.015, q:0.38, alpha:-2.0, beta:0.3, gamma:0.9},
+ {id:4, name:'Urban Landed Advanced', area:'Urban', house:'Landed', product:'Advanced', f_urban:0.40, f_flooring:0.85, f_dwelling:0.95, f_cleaning_need:0.98, f_suitability:0.79, f_affordability:0.50, p:0.050, q:0.30, alpha:-0.8, beta:0.5, gamma:1.3},
+ {id:5, name:'Suburban Landed Basic', area:'Suburban', house:'Landed', product:'Basic', f_urban:0.35, f_flooring:0.80, f_dwelling:0.80, f_cleaning_need:0.92, f_suitability:0.59, f_affordability:0.80, p:0.012, q:0.35, alpha:-2.1, beta:0.3, gamma:0.8},
+ {id:6, name:'Suburban Landed Advanced', area:'Suburban', house:'Landed', product:'Advanced', f_urban:0.35, f_flooring:0.80, f_dwelling:0.90, f_cleaning_need:0.92, f_suitability:0.66, f_affordability:0.55, p:0.030, q:0.28, alpha:-0.9, beta:0.5, gamma:1.1},
+ {id:7, name:'Rural Landed Basic', area:'Rural', house:'Landed', product:'Basic', f_urban:0.25, f_flooring:0.60, f_dwelling:0.50, f_cleaning_need:0.85, f_suitability:0.25, f_affordability:0.70, p:0.008, q:0.20, alpha:-2.5, beta:0.2, gamma:0.6},
+ {id:8, name:'Rural Landed Advanced', area:'Rural', house:'Landed', product:'Advanced', f_urban:0.25, f_flooring:0.60, f_dwelling:0.70, f_cleaning_need:0.85, f_suitability:0.36, f_affordability:0.35, p:0.020, q:0.15, alpha:-1.0, beta:0.4, gamma:0.8}
+];
+
+const regions = [
+ {name:'North America', emoji:'🌎', left:'8%', top:'18%', multiplier:0.90},
+ {name:'Latin America', emoji:'🌴', left:'18%', top:'58%', multiplier:0.70},
+ {name:'Europe', emoji:'🏛️', left:'43%', top:'18%', multiplier:0.95},
+ {name:'Middle East', emoji:'🏜️', left:'52%', top:'45%', multiplier:0.75},
+ {name:'Africa', emoji:'🌍', left:'44%', top:'62%', multiplier:0.58},
+ {name:'Asia Pacific', emoji:'🌏', left:'70%', top:'24%', multiplier:1.08},
+ {name:'Oceania', emoji:'🏝️', left:'76%', top:'65%', multiplier:0.62}
+];
+
+const playerColors = {
+ p1: {name:'Player 1', symbol:'🔵', className:'active-p1'},
+ p2: {name:'Player 2', symbol:'🟣', className:'active-p2'},
+ p3: {name:'Player 3', symbol:'🟢', className:'active-p3'}
+};
+
+function init() {
+  ['p1Segment','p2Segment','p3Segment'].forEach(id => {
+    const el = document.getElementById(id);
+    segments.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name;
+      el.appendChild(opt);
+    });
+  });
+  document.getElementById('p1Segment').value = 2;
+  document.getElementById('p2Segment').value = 3;
+  document.getElementById('p3Segment').value = 4;
+  setupExtras();
+  setMode(2);
+  resetGame();
+}
+
+function activePlayers() {
+  return ['p1','p2','p3'].slice(0, playerMode);
+}
+
+function setMode(mode) {
+  playerMode = mode;
+  ['p1','p2','p3'].forEach((p, i) => {
+    const active = i < playerMode;
+    document.getElementById(p+'Panel').classList.toggle('hidden', !active);
+    document.getElementById(p+'Robot').classList.toggle('hidden', !active);
+  });
+  pushOnlineState();
+  simulate();
+}
+
+function toggleTips() {
+  const tips = document.getElementById('tipsBox');
+  tips.style.display = tips.style.display === 'block' ? 'none' : 'block';
+}
+
+function resetGame() {
+  currentYear = START_YEAR;
+  renderRegions([]);
+  simulate(true);
+  pushOnlineState();
+}
+
+function globalChanged() {
+  pushOnlineState();
+  simulate();
+}
+
+function playerChanged(prefix) {
+  pushOnlineState();
+  simulate();
+}
+
+function inputFor(prefix) {
+  return {
+    company: document.getElementById(prefix+'Company').value.trim() || prefix.toUpperCase(),
+    head: document.getElementById(prefix+'Head').value,
+    segmentId: Number(document.getElementById(prefix+'Segment').value),
+    price: Number(document.getElementById(prefix+'Price').value),
+    ad: Number(document.getElementById(prefix+'Ad').value),
+    tech: Number(document.getElementById(prefix+'Tech').value),
+    priceChange: Number(document.getElementById(prefix+'PriceChange').value),
+    shock: Number(document.getElementById('shock').value)
+  };
+}
+
+function setInput(prefix, data) {
+  if (!data) return;
+  ['Company','Head','Segment','Price','Ad','Tech','PriceChange'].forEach(field => {
+    const el = document.getElementById(prefix+field);
+    const key = field.charAt(0).toLowerCase() + field.slice(1);
+    if (el && data[key] !== undefined) el.value = data[key];
+  });
+}
+
+function updateLabels(prefix, input) {
+  document.getElementById(prefix+'PriceVal').textContent = `$${input.price}`;
+  document.getElementById(prefix+'AdVal').textContent = `${Math.round(input.ad*100)}%`;
+  document.getElementById(prefix+'TechVal').textContent = `${Math.round(input.tech*100)}%`;
+  document.getElementById(prefix+'PriceChangeVal').textContent = `${Math.round(input.priceChange*100)}%`;
+  document.getElementById(prefix+'Robot').textContent = input.head;
+}
+
+function marketPotential(s, shock, regionMultiplier=1) {
+  return H_TOTAL * s.f_urban * s.f_suitability * s.f_affordability * shock * regionMultiplier;
+}
+
+function simulateRows(s, input, endYear=END_YEAR, regionMultiplier=1) {
+  let N = 0;
+  let rows = [];
+  const X = s.alpha * (-input.priceChange) + s.beta * input.ad + s.gamma * input.tech;
+  const M = marketPotential(s, input.shock, regionMultiplier);
+
+  if (endYear < FIRST_MARKET_YEAR) {
+    return [{year: START_YEAR, adoption:0, newAdopters:0, value:0, M, X}];
+  }
+
+  for (let year = FIRST_MARKET_YEAR; year <= endYear; year++) {
+    let adoptionRate = (s.p + s.q * (N / M)) * (M - N) * (1 + X);
+    adoptionRate = Math.max(0, adoptionRate);
+    N = Math.min(N + adoptionRate, M);
+    rows.push({year, adoption:N, newAdopters:adoptionRate, value:(N*input.price)/1000, M, X});
+  }
+  return rows;
+}
+
+function resultFor(prefix) {
+  const input = inputFor(prefix);
+  updateLabels(prefix, input);
+  const segment = segments.find(s => s.id === input.segmentId);
+  const nowRows = simulateRows(segment, input, currentYear, 1);
+  const fullRows = simulateRows(segment, input, END_YEAR, 1);
+  const now = nowRows[nowRows.length - 1];
+  const last = fullRows[fullRows.length - 1];
+
+  const adoptionRate = last.M > 0 ? (last.adoption / last.M) * 100 : 0;
+  const affordabilityScore = Math.max(0, 100 - ((input.price - 200) / 1000) * 100);
+  const segmentFit = (segment.f_suitability * 45) + (segment.f_affordability * 35) + (segment.f_flooring * 20);
+
+  // === AHP-aligned criteria (0-100 each) ===
+  // These four map directly onto the report's AHP main criteria so the live
+  // scoring uses the SAME priorities the written solution argues for.
+  const techAttractiveness  = Math.min(100, input.tech * 180 + (segment.product === 'Advanced' ? 20 : 0));      // Technological attractiveness
+  const adoptionPotential   = Math.min(100, adoptionRate * 0.7 + segmentFit * 0.3);                              // Market adoption potential
+  const priceCompetitiveness = affordabilityScore;                                                              // Price competitiveness
+  const adEffectiveness     = Math.min(100, input.ad * 120);                                                     // Advertising effectiveness
+
+  // AHP weights from the report (CR = 0.011, consistent):
+  // Technology 51.98% | Adoption 26.77% | Price 14.95% | Advertising 6.30%
+  const score = Math.min(100,
+    techAttractiveness   * 0.5198 +
+    adoptionPotential    * 0.2677 +
+    priceCompetitiveness * 0.1495 +
+    adEffectiveness      * 0.0630
+  );
+
+  return {prefix, input, segment, nowRows, fullRows, now, last, adoptionRate, score,
+          affordabilityScore, segmentFit,
+          ahp: {techAttractiveness, adoptionPotential, priceCompetitiveness, adEffectiveness}};
+}
+
+function simulate(isReset=false) {
+  const results = activePlayers().map(p => resultFor(p));
+  // feature 2: competitive coupling overrides independent adoption when >1 player
+  let comp = null;
+  if (competitiveMode && results.length > 1 && currentYear >= FIRST_MARKET_YEAR) {
+    comp = computeCompetitive(results);
+  }
+  const shockText = document.getElementById('shock').selectedOptions[0].text;
+  document.getElementById('eventText').textContent = `Market Event: ${shockText}`;
+  document.getElementById('yearKpi').textContent = currentYear;
+
+  ['p1','p2','p3'].forEach(p => {
+    const r = results.find(x => x.prefix === p);
+    document.getElementById(p+'AdoptionKpi').textContent = r ? `${r.now.adoption.toFixed(1)}M` : '-';
+    document.getElementById(p+'ValueKpi').textContent = r ? `$${r.now.value.toFixed(1)}B` : '-';
+  });
+
+  renderRegions(regionResults(results));
+  updateWinner(results, isReset);
+  updateBadges(results);
+  updateScoreBoxes(results);
+  drawAdoptionChart(results);
+  drawValueChart(results);
+  drawTargetChart(results);
+  drawScoreChart(results);
+  renderShareBar(results, comp, isReset);
+  updateGlobe(results, isReset);
+  syncScrubber();
+}
+
+function regionResults(results) {
+  return regions.map(region => {
+    const playerData = results.map(r => {
+      const rows = simulateRows(r.segment, r.input, currentYear, region.multiplier);
+      return {...r, regionLast: rows[rows.length - 1]};
+    });
+    if (currentYear === START_YEAR) return {...region, playerData, leader:'None'};
+
+    const sorted = [...playerData].sort((a,b) => b.regionLast.adoption - a.regionLast.adoption);
+    const top = sorted[0];
+    const second = sorted[1];
+    let leader = top.prefix;
+    if (second && Math.abs(top.regionLast.adoption - second.regionLast.adoption) < 3) leader = 'Contested';
+    return {...region, playerData, leader};
+  });
+}
+
+function renderRegions(data) {
+  const box = document.getElementById('regions');
+  box.innerHTML = '';
+  const display = data.length ? data : regions.map(r => ({...r, playerData:[], leader:'None'}));
+
+  display.forEach(r => {
+    const div = document.createElement('div');
+    let cls = 'region';
+    if (r.leader === 'p1') cls += ' active-p1';
+    else if (r.leader === 'p2') cls += ' active-p2';
+    else if (r.leader === 'p3') cls += ' active-p3';
+    else cls += ' contested';
+    div.className = cls;
+    div.style.left = r.left;
+    div.style.top = r.top;
+
+    let numberLines = activePlayers().map(p => {
+      const rd = r.playerData.find(x => x.prefix === p);
+      const symbol = playerColors[p].symbol;
+      const val = rd ? rd.regionLast.adoption.toFixed(1) + 'M' : '0.0M';
+      return `${symbol} ${p.toUpperCase()}: ${val}`;
+    }).join('<br>');
+
+    let leaderText = 'No launch yet';
+    if (currentYear > START_YEAR) {
+      if (r.leader === 'Contested') leaderText = 'Contested market';
+      else leaderText = `${playerColors[r.leader].symbol} ${r.leader.toUpperCase()} leading`;
+    }
+
+    div.innerHTML = `
+      <div class="pulse"></div>
+      <div class="emoji">${r.emoji}</div>
+      <div class="name">${r.name}</div>
+      <div class="numbers">${numberLines}</div>
+      <div class="leader">${leaderText}</div>
+    `;
+    box.appendChild(div);
+  });
+}
+
+function updateWinner(results, isReset=false) {
+  const box = document.getElementById('winnerText');
+  if (currentYear === START_YEAR || isReset) {
+    box.textContent = 'Reset state: no product has entered the market yet. Press Next Year or Auto Diffuse.';
+    return;
+  }
+
+  const sorted = [...results].sort((a,b) => {
+    if (Math.abs(b.score - a.score) > 0.01) return b.score - a.score;
+    if (Math.abs(b.last.adoption - a.last.adoption) > 0.01) return b.last.adoption - a.last.adoption;
+    return b.last.value - a.last.value;
+  });
+
+  const winner = sorted[0];
+  const second = sorted[1];
+
+  if (second && Math.abs(winner.score - second.score) < 0.01 && Math.abs(winner.last.adoption - second.last.adoption) < 0.01) {
+    // Tie-breaker: higher market value must win, so no draw.
+    const tieBreakWinner = [...sorted].sort((a,b) => b.last.value - a.last.value)[0];
+    box.textContent = `🏆 2030 Winner after tie-break: ${tieBreakWinner.input.company}. Higher market value gives the final victory.`;
+  } else {
+    box.textContent = `🏆 2030 Winner: ${winner.input.company}. Best combined strategy in adoption, profitability, affordability, technology, and target demographic fit.`;
+  }
+}
+
+function updateBadges(results) {
+  const best = [...results].sort((a,b) => b.score - a.score)[0];
+  let badges = [];
+  if (best.score >= 85) badges.push('🏆 Market Leader');
+  if (best.input.price < 450) badges.push('💸 Affordable Winner');
+  if (best.input.tech > 0.35) badges.push('🤖 AI Innovation');
+  if (best.input.ad > 0.4) badges.push('📢 Marketing Power');
+  if (best.segment.area === 'Urban') badges.push('🏙️ Urban Expansion');
+  if (best.segment.product === 'Advanced') badges.push('✨ Premium Tech');
+  if (badges.length === 0) badges.push('🧪 Experimental Strategy');
+  document.getElementById('badges').innerHTML = badges.map(b => `<span class="badge">${b}</span>`).join('');
+  document.getElementById('missionText').textContent = `${playerMode} manufacturer(s) competing. Click here for scoring strategy tips.`;
+}
+
+function updateScoreBoxes(results) {
+  const box = document.getElementById('scoreRow');
+  box.innerHTML = '';
+  results.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'score-box';
+    div.innerHTML = `
+      <h3>${playerColors[r.prefix].symbol} ${r.input.company}</h3>
+      <div class="score">${r.score.toFixed(1)}</div>
+      <p>2030 Adoption: <b>${r.last.adoption.toFixed(1)}M</b></p>
+      <p>2030 Value: <b>$${r.last.value.toFixed(1)}B</b></p>
+      <p>Target: <b>${r.segment.name}</b></p>
+    `;
+    box.appendChild(div);
+  });
+}
+
+function chartColors() {
+  return ['#3b82f6', '#ec4899', '#22c55e'];
+}
+
+// Gaussian sampler (Box-Muller) for Monte Carlo parameter noise.
+function gaussian(mean, sd) {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return mean + sd * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+// Re-run GBDM many times with noise on the two parameters the report's Monte
+// Carlo perturbs (urbanization f_urban and affordability f_affordability),
+// then take the per-year 5th/95th percentile -> a 90% confidence band.
+function monteCarloBand(result, runs = 160) {
+  const s = result.segment;
+  const input = result.input;
+  const years = Array.from({length: END_YEAR - FIRST_MARKET_YEAR + 1}, (_, i) => FIRST_MARKET_YEAR + i);
+  const perYear = years.map(() => []);
+
+  for (let k = 0; k < runs; k++) {
+    const noisy = {
+      ...s,
+      f_urban: Math.max(0.05, gaussian(s.f_urban, s.f_urban * 0.10)),
+      f_affordability: Math.max(0.05, gaussian(s.f_affordability, s.f_affordability * 0.10))
+    };
+    const rows = simulateRows(noisy, input, END_YEAR, 1);
+    rows.forEach((r, i) => perYear[i].push(r.adoption));
+  }
+
+  const pct = (arr, p) => {
+    const sorted = [...arr].sort((a, b) => a - b);
+    return sorted[Math.floor(p * (sorted.length - 1))];
+  };
+  return {
+    lower: perYear.map(a => pct(a, 0.05)),
+    upper: perYear.map(a => pct(a, 0.95))
+  };
+}
+
+function drawAdoptionChart(results) {
+  const ctx = document.getElementById('adoptionChart');
+  if (adoptionChart) adoptionChart.destroy();
+  const colors = chartColors();
+  const labels = Array.from({length: END_YEAR - FIRST_MARKET_YEAR + 1}, (_, i) => FIRST_MARKET_YEAR + i);
+
+  // 90% Monte Carlo band for the leading manufacturer — only in faithful mode
+  // (in competitive mode the lines come from the shared-pool model, so a single-
+  //  market band would not align).
+  const lead = results[0];
+  const band = (lead && !competitiveMode) ? monteCarloBand(lead) : null;
+  const bandDatasets = band ? [
+    { label: 'MC 5th %ile', data: band.lower, borderColor: 'rgba(59,130,246,0)',
+      backgroundColor: 'rgba(59,130,246,0.12)', pointRadius: 0, fill: false, tension: 0.35, order: 99 },
+    { label: '90% confidence band', data: band.upper, borderColor: 'rgba(59,130,246,0)',
+      backgroundColor: 'rgba(59,130,246,0.12)', pointRadius: 0, fill: '-1', tension: 0.35, order: 99 }
+  ] : [];
+
+  const lineDatasets = results.map((r, i) => ({
+    label: r.input.company,
+    data: r.fullRows.map(x => x.adoption),
+    borderColor: colors[i],
+    backgroundColor: colors[i],
+    tension: 0.35,
+    fill: false,
+    order: 1
+  }));
+
+  adoptionChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [...bandDatasets, ...lineDatasets] },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: true, labels: { filter: it => it.text !== 'MC 5th %ile' } } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+}
+
+function drawValueChart(results) {
+  const ctx = document.getElementById('valueChart');
+  if (valueChart) valueChart.destroy();
+  const colors = chartColors();
+  valueChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: results.map(r => r.input.company),
+      datasets: [{ label: '2030 Market Value USD Billion', data: results.map(r => r.last.value), backgroundColor: colors }]
+    },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+  });
+}
+
+function drawTargetChart(results) {
+  const ctx = document.getElementById('targetChart');
+  if (targetChart) targetChart.destroy();
+  const colors = chartColors();
+  targetChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: results.map(r => r.input.company),
+      datasets: [
+        { label: '2030 Adoption Rate (%)', data: results.map(r => r.adoptionRate), backgroundColor: colors }
+      ]
+    },
+    options: {
+      responsive:true,
+      plugins:{legend:{display:true}},
+      scales:{y:{beginAtZero:true, max:100}}
+    }
+  });
+}
+
+function drawScoreChart(results) {
+  const ctx = document.getElementById('scoreChart');
+  if (scoreChart) scoreChart.destroy();
+  const colors = chartColors();
+  scoreChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: results.map(r => r.input.company),
+      datasets: [{ label: 'Winner Score', data: results.map(r => r.score), backgroundColor: colors }]
+    },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, max:100}} }
+  });
+}
+
+function nextYear() {
+  currentYear = Math.min(END_YEAR, currentYear + 1);
+  pushOnlineState();
+  simulate();
+}
+
+function applyState(state) {
+  if (!state) return;
+  isApplyingRemote = true;
+  currentYear = state.currentYear ?? currentYear;
+  playerMode = state.playerMode ?? playerMode;
+  if (state.shock !== undefined) document.getElementById('shock').value = state.shock;
+  if (state.players) {
+    ['p1','p2','p3'].forEach(p => setInput(p, state.players[p]));
+  }
+  ['p1','p2','p3'].forEach((p, i) => {
+    const active = i < playerMode;
+    document.getElementById(p+'Panel').classList.toggle('hidden', !active);
+    document.getElementById(p+'Robot').classList.toggle('hidden', !active);
+  });
+  isApplyingRemote = false;
+  simulate();
+}
+
+function connectOnline() {
+  if (!firebaseReady()) {
+    document.getElementById('onlineStatus').textContent = 'Online mode not active: add Firebase config first. Local play still works.';
+    return;
+  }
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const roomId = document.getElementById('roomId').value.trim() || 'mimmc-room';
+  onlineRef = firebase.database().ref('rooms/' + roomId);
+  onlineRef.on('value', snap => {
+    const state = snap.val();
+    if (state) applyState(state);
+  });
+  onlineRef.update(collectState());
+  document.getElementById('onlineStatus').textContent = `Online mode ON. Room: ${roomId}. Share this room ID with friends.`;
+}
+
+function pushOnlineState() {
+  if (onlineRef && !isApplyingRemote) {
+    onlineRef.update(collectState());
+  }
+}
+
+function autoPlay() {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }   // never run two loops at once
+  if (currentYear >= END_YEAR) { currentYear = START_YEAR; simulate(true); }
+  autoTimer = setInterval(() => {
+    if (currentYear >= END_YEAR) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+      return;
+    }
+    currentYear += 1;
+    pushOnlineState();
+    simulate();
+  }, 750);
+}
+
+function collectState() {
+  const players = {};
+  ['p1','p2','p3'].forEach(p => players[p] = inputFor(p));
+  return {
+    currentYear,
+    playerMode,
+    shock: document.getElementById('shock').value,
+    players
+  };
+}
+
+// ============================================================
+//  Load the report's recommended 2030 winner (judge challenge)
+// ============================================================
+function loadRecommendation() {
+  if (playerMode < 1) setMode(1);
+  // report-faithful mode: independent single-market diffusion so the headline
+  // 374M number matches the written solution exactly.
+  competitiveMode = false;
+  document.getElementById('compToggle').classList.remove('on');
+  document.getElementById('compToggle').textContent = '📄 Faithful';
+  document.getElementById('p1Company').value = 'Our 2030 Winner';
+  document.getElementById('p1Segment').value = 2;      // Urban Apartment Advanced
+  document.getElementById('p1Price').value = 550;      // consumer sweet spot, inside knee-point band
+  document.getElementById('p1Ad').value = 0.32;
+  document.getElementById('p1Tech').value = 0.42;
+  document.getElementById('p1PriceChange').value = 0.05;
+  currentYear = START_YEAR;
+  simulate(true);
+  document.getElementById('missionText').textContent =
+    'Loaded our recommendation (report-faithful mode): Urban Apartment · Advanced · $550. Press ⚡ Auto, then switch to ⚔️ Competitive and try to beat it.';
+}
+
+// ============================================================
+//  AI Market Strategist
+//  Default: instant offline reasoning over the knee-point + AHP.
+//  Optional: full AI-written analysis when an API key is provided.
+// ============================================================
+const KNEE_PRICE = 547, BAND_LOW = 450, BAND_HIGH = 650;
+
+function deterministicAdvice(results) {
+  const ranked = [...results].sort((a, b) => b.score - a.score);
+  const lead = ranked[0];
+  let out = `Standing: ${ranked.map((r, i) => `${i + 1}. ${r.input.company} (${r.score.toFixed(0)})`).join('   ')}\n\n`;
+
+  results.forEach(r => {
+    const p = r.input.price;
+    let priceMove;
+    if (p > BAND_HIGH) priceMove = `Price $${p} is above the $${BAND_HIGH} ceiling — you are shedding adopters. Cut toward the $${KNEE_PRICE} knee-point.`;
+    else if (p < BAND_LOW) priceMove = `Price $${p} is below the $${BAND_LOW} floor — adoption is fine but you are giving away margin. Lift toward $${KNEE_PRICE}.`;
+    else priceMove = `Price $${p} sits inside the viable $${BAND_LOW}–$${BAND_HIGH} band (knee-point $${KNEE_PRICE}). Good.`;
+
+    const onWinner = r.segment.id === 2;
+    const segMove = onWinner
+      ? `Targeting Urban Apartment · Advanced — the structurally winning segment.`
+      : `Targeting ${r.segment.name}. Suitability ${(r.segment.f_suitability * 100).toFixed(0)}% vs 95% for Urban Apartment Advanced — consider switching.`;
+
+    const techMove = r.input.tech < 0.25
+      ? `Technology is only ${(r.input.tech * 100).toFixed(0)}% — and technology is 52% of the AHP decision. Raising it is your highest-leverage move.`
+      : `Technology ${(r.input.tech * 100).toFixed(0)}% is competitive on the 52%-weighted criterion.`;
+
+    out += `${playerColors[r.prefix].symbol} ${r.input.company}\n  • ${priceMove}\n  • ${segMove}\n  • ${techMove}\n\n`;
+  });
+  out += `Bottom line: ${lead.input.company} leads on the AHP-weighted score. Closing the gap means moving toward the knee-point price and lifting technology, not chasing raw adoption.`;
+  return out.trim();
+}
+
+function askStrategist() {
+  const results = activePlayers().map(p => resultFor(p));
+  const box = document.getElementById('advisorBox');
+  box.style.display = 'block';
+  // AI moved to the Streamlit backend. This panel runs the local
+  // deterministic analysis only — no external AI API is called from the HTML.
+  box.textContent = deterministicAdvice(results);
+}
+
+// ============================================================
+//  FEATURE 2 — Competitive multi-brand diffusion (shared pool)
+//  Brands draw from ONE finite market; each year they split the new
+//  adopters by relative attractiveness, so they steal from each other.
+// ============================================================
+function competitivePool(results) {
+  const shock = results[0].input.shock;
+  const avg = k => results.reduce((a, r) => a + r.segment[k], 0) / results.length;
+  const M = H_TOTAL * avg('f_urban') * avg('f_suitability') * avg('f_affordability') * shock;
+  const P = results.reduce((a, r) => a + r.segment.p, 0) / results.length;
+  const Q = results.reduce((a, r) => a + r.segment.q, 0) / results.length;
+  return { M: Math.max(1, M), P, Q };
+}
+function attractiveness(r) {
+  const X = r.segment.alpha * (-r.input.priceChange) + r.segment.beta * r.input.ad + r.segment.gamma * r.input.tech;
+  const priceComp = Math.max(0.2, 1 - (r.input.price - 200) / 1400);  // cheaper => stronger pull
+  const techPull = 0.5 + r.input.tech;                                // 0.5 .. 1.0
+  const fit = r.segment.f_suitability;
+  return Math.max(0.05, (1 + X)) * priceComp * techPull * fit;
+}
+function computeCompetitive(results) {
+  const { M, P, Q } = competitivePool(results);
+  const N = results.map(() => 0);
+  const series = results.map(() => []);
+  for (let year = FIRST_MARKET_YEAR; year <= END_YEAR; year++) {
+    const totalN = N.reduce((a, b) => a + b, 0);
+    let dN = Math.max(0, (P + Q * (totalN / M)) * (M - totalN));
+    const attrs = results.map(attractiveness);
+    const sumA = attrs.reduce((a, b) => a + b, 0) || 1;
+    results.forEach((r, i) => { N[i] += dN * attrs[i] / sumA; series[i].push(N[i]); });
+  }
+  results.forEach((r, i) => {
+    r.fullRows = series[i].map((adoption, idx) => ({
+      year: FIRST_MARKET_YEAR + idx, adoption, newAdopters: 0, value: (adoption * r.input.price) / 1000, M, X: 0
+    }));
+    const idxNow = Math.max(0, Math.min(r.fullRows.length - 1, currentYear - FIRST_MARKET_YEAR));
+    r.last = r.fullRows[r.fullRows.length - 1];
+    r.now = currentYear < FIRST_MARKET_YEAR ? { year: START_YEAR, adoption: 0, value: 0, M, X: 0 } : r.fullRows[idxNow];
+    r.adoptionRate = M > 0 ? (r.last.adoption / M) * 100 : 0;
+    const segmentFit = (r.segment.f_suitability * 45) + (r.segment.f_affordability * 35) + (r.segment.f_flooring * 20);
+    const adoptionPotential = Math.min(100, r.adoptionRate * 0.7 + segmentFit * 0.3);
+    r.ahp.adoptionPotential = adoptionPotential;
+    r.score = Math.min(100, r.ahp.techAttractiveness * 0.5198 + adoptionPotential * 0.2677 + r.ahp.priceCompetitiveness * 0.1495 + r.ahp.adEffectiveness * 0.0630);
+  });
+  const totalLast = results.reduce((a, r) => a + r.last.adoption, 0);
+  results.forEach(r => r.share = totalLast > 0 ? r.last.adoption / totalLast : 0);
+  const openShare = Math.max(0, 1 - totalLast / M);
+  return { M, openShare };
+}
+function toggleCompetitive() {
+  competitiveMode = !competitiveMode;
+  const t = document.getElementById('compToggle');
+  t.classList.toggle('on', competitiveMode);
+  t.textContent = competitiveMode ? '⚔️ Competitive' : '📄 Faithful';
+  simulate();
+}
+function renderShareBar(results, comp, isReset) {
+  const panel = document.getElementById('sharePanel');
+  const bar = document.getElementById('shareBar');
+  const note = document.getElementById('shareNote');
+  if (!competitiveMode) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  if (results.length < 2 || !comp || isReset || currentYear < FIRST_MARKET_YEAR) {
+    bar.innerHTML = '<div style="flex:1 1 100%;background:#24305C;color:#93A7CC;">Press ⚡ Auto to begin the competitive rollout</div>';
+    note.textContent = results.length < 2 ? 'add a 2nd player to start the war' : "players steal each other's adopters";
+    return;
+  }
+  const cols = { p1: '#3b82f6', p2: '#a855f7', p3: '#22c55e' };
+  let html = '';
+  results.forEach(r => {
+    const pct = r.share * 100;
+    html += `<div style="flex:0 0 ${pct}%;background:${cols[r.prefix]}">${pct >= 8 ? r.input.company.split(' ')[0] + ' ' + pct.toFixed(0) + '%' : ''}</div>`;
+  });
+  const open = Math.max(0, comp.openShare * 100);
+  html += `<div style="flex:0 0 ${open}%;background:#24305C;color:#93A7CC">${open >= 8 ? 'open ' + open.toFixed(0) + '%' : ''}</div>`;
+  bar.innerHTML = html;
+  note.textContent = `shared pool ≈ ${comp.M.toFixed(0)}M households`;
+}
+
+// ============================================================
+//  FEATURE 1 — Timeline scrubber
+// ============================================================
+function scrubTo(v) {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  currentYear = Number(v);
+  document.getElementById('scrubYear').textContent = v;
+  pushOnlineState();
+  simulate();
+}
+function syncScrubber() {
+  const sc = document.getElementById('scrubber');
+  if (sc) { sc.value = currentYear; document.getElementById('scrubYear').textContent = currentYear; }
+}
+
+// ============================================================
+//  FEATURE 4 — Natural-language command bar (local parser; AI lives in the backend)
+// ============================================================
+async function runCommand() {
+  const inp = document.getElementById('nlInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  // AI parsing moved to the Streamlit backend — command bar uses the local parser only.
+  let changes = parseCommandLocal(text);
+  if (changes && changes.length) {
+    applyChanges(changes);
+    inp.value = '';
+    document.getElementById('missionText').textContent = 'Applied: ' + changes.map(c => c.player.toUpperCase() + ' ' + c.field + '→' + c.value).join(', ');
+  } else {
+    document.getElementById('missionText').textContent = 'Could not parse that. Try: "set P2 price to 480 and tech to 45%".';
+  }
+}
+// groqParse() removed — natural-language parsing now uses parseCommandLocal() only.
+function parseCommandLocal(text) {
+  const t = text.toLowerCase();
+  // which players
+  let players = [];
+  if (/\bp?1\b|player one|player 1|first/.test(t)) players.push('p1');
+  if (/\bp?2\b|player two|player 2|second/.test(t)) players.push('p2');
+  if (/\bp?3\b|player three|player 3|third/.test(t)) players.push('p3');
+  if (!players.length) players = ['p1'];
+  const changes = [];
+  players.forEach(pl => {
+    let m;
+    if ((m = t.match(/(?:price\D*?|\$\s*|to\s*\$?\s*)(\d{3,4})/))) changes.push({ player: pl, field: 'price', value: Math.min(1200, Math.max(200, +m[1])) });
+    if (/max(imum)?\s+tech/.test(t)) changes.push({ player: pl, field: 'tech', value: 0.5 });
+    else if ((m = t.match(/tech(?:nology)?\D*?(\d{1,3})\s*%?/))) changes.push({ player: pl, field: 'tech', value: Math.min(0.5, Math.max(0, +m[1] / 100)) });
+    if ((m = t.match(/ad(?:vertis\w*)?\D*?(\d{1,3})\s*%/))) changes.push({ player: pl, field: 'ad', value: Math.min(0.6, Math.max(0, +m[1] / 100)) });
+    if (/\badvanced\b/.test(t)) changes.push({ player: pl, field: 'segment', value: 2 });
+    else if (/\bbasic\b/.test(t)) changes.push({ player: pl, field: 'segment', value: 1 });
+  });
+  return changes;
+}
+function applyChanges(changes) {
+  const map = { price: 'Price', tech: 'Tech', ad: 'Ad', priceChange: 'PriceChange', segment: 'Segment', company: 'Company' };
+  changes.forEach(c => {
+    const el = document.getElementById(c.player + (map[c.field] || ''));
+    if (el) el.value = c.value;
+  });
+  simulate();
+}
+
+// ============================================================
+//  FEATURE 5 — QR to open the live app
+// ============================================================
+const SHARE_URL = 'https://group-10-mimmc.streamlit.app/';
+function generateQR() {
+  const box = document.getElementById('qrBox');
+  if (!box || !window.QRCode) return;
+  box.innerHTML = '';
+  const room = (document.getElementById('roomId') && document.getElementById('roomId').value || 'mimmc-room').trim();
+  try {
+    new QRCode(box, { text: SHARE_URL + '?room=' + encodeURIComponent(room), width: 42, height: 42, correctLevel: QRCode.CorrectLevel.M });
+  } catch (e) {}
+  box.onclick = () => window.open(SHARE_URL, '_blank');
+}
+
+// ============================================================
+//  FEATURE 6 — 3D adoption globe (globe.gl) with 2D fallback
+// ============================================================
+const PLAYER_GEO = {
+  p1: [[40.7, -74], [51.5, -0.1], [35.7, 139.7]],     // New York, London, Tokyo
+  p2: [[1.35, 103.8], [48.85, 2.35], [37.5, 127]],    // Singapore, Paris, Seoul
+  p3: [[-33.8, 151.2], [19.4, -99.1], [25.2, 55.3]],  // Sydney, Mexico City, Dubai
+};
+const GEO_COLORS = { p1: '#3b82f6', p2: '#a855f7', p3: '#22c55e' };
+const REGION_LABELS = [
+  { name:'North America', emoji:'🌎', lat:40,  lng:-100 },
+  { name:'Latin America', emoji:'🌴', lat:-12, lng:-58 },
+  { name:'Europe',        emoji:'🏛️', lat:50,  lng:10 },
+  { name:'Middle East',   emoji:'🏜️', lat:26,  lng:45 },
+  { name:'Africa',        emoji:'🌍', lat:2,   lng:22 },
+  { name:'Asia Pacific',  emoji:'🌏', lat:28,  lng:115 },
+  { name:'Oceania',       emoji:'🏝️', lat:-25, lng:134 },
+];
+function initGlobe() {
+  const el = document.getElementById('globeViz');
+  try {
+    if (!window.Globe || !el) throw new Error('no globe');
+    globeInstance = Globe()(el)
+      .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+      .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+      .backgroundColor('rgba(0,0,0,0)')
+      .showAtmosphere(true).atmosphereColor('#9fd0ff').atmosphereAltitude(0.18)
+      .pointLat('lat').pointLng('lng').pointColor('color')
+      .pointAltitude('alt').pointRadius('r').pointResolution(6)
+      .width(el.clientWidth || 700).height(520);
+    // region label boxes: face the camera, scale up as you roll toward them
+    globeInstance
+      .htmlElementsData(REGION_LABELS)
+      .htmlLat(d => d.lat).htmlLng(d => d.lng).htmlAltitude(0.012)
+      .htmlElement(d => {
+        const lab = document.createElement('div');
+        lab.className = 'globe-region-label';
+        lab.innerHTML = '<span class="gr-emoji">' + d.emoji + '</span>' +
+                        '<span class="gr-name">' + d.name + '</span>';
+        return lab;
+      });
+    try {
+      globeInstance.htmlElementVisibilityModifier((lab, isVisible) => {
+        lab.style.opacity = isVisible ? '1' : '0';
+      });
+    } catch (e) {}
+    globeInstance.controls().autoRotate = true;
+    globeInstance.controls().autoRotateSpeed = 0.6;
+    // brighten: lift ambient + add a fill light so the dark side is still legible
+    try {
+      const THREE = (window.Globe && Globe.THREE) || window.THREE;
+      const sc = globeInstance.scene();
+      if (THREE) {
+        sc.add(new THREE.AmbientLight(0xffffff, 0.85));
+        const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(1, 1, 1); sc.add(dir);
+      }
+    } catch (e) {}
+    globeMode = true;
+  } catch (e) {
+    globeMode = false;
+    document.getElementById('globeViz').classList.add('hidden');
+    document.getElementById('map2d').classList.remove('hidden');
+    const tg = document.getElementById('globeToggle');
+    if (tg) { tg.classList.remove('on'); tg.textContent = '🗺️ 2D'; }
+  }
+}
+function genGlobePoints(results) {
+  const pts = [];
+  results.forEach(r => {
+    const bases = PLAYER_GEO[r.prefix] || [];
+    const n = Math.min(90, Math.max(0, Math.round(r.now.adoption / 4)));
+    for (let i = 0; i < n; i++) {
+      const b = bases[i % bases.length];
+      pts.push({
+        lat: b[0] + (Math.random() - 0.5) * 22,
+        lng: b[1] + (Math.random() - 0.5) * 28,
+        color: GEO_COLORS[r.prefix], alt: 0.04 + Math.random() * 0.22, r: 0.5
+      });
+    }
+  });
+  return pts;
+}
+function updateGlobe(results) {
+  if (globeMode && globeInstance) {
+    document.getElementById('globeViz').classList.remove('hidden');
+    document.getElementById('map2d').classList.add('hidden');
+    globeInstance.pointsData(genGlobePoints(results));
+  } else {
+    document.getElementById('globeViz').classList.add('hidden');
+    document.getElementById('map2d').classList.remove('hidden');
+  }
+}
+function toggleGlobeView() {
+  const tg = document.getElementById('globeToggle');
+  if (!globeInstance) { globeMode = false; }
+  else globeMode = !globeMode;
+  tg.classList.toggle('on', globeMode);
+  tg.textContent = globeMode ? '🌐 3D' : '🗺️ 2D';
+  simulate();
+}
+function setupExtras() {
+  generateQR();
+  initGlobe();
+  const room = document.getElementById('roomId');
+  if (room) room.addEventListener('change', generateQR);
+  window.addEventListener('resize', () => {
+    const el = document.getElementById('globeViz');
+    if (globeInstance && el) globeInstance.width(el.clientWidth || 700);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
