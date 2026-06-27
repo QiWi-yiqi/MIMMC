@@ -12,6 +12,7 @@ FIXES:
   ✓ Q1–Q8 market analysis charts
   ✓ Competitor War HTML game embedded
   ✓ WCPI model justification
+  ✓ AI backend: in-game coach + final strategic report (server-side, ai_backend.py)
 TABS:
   Tab 1 — GBDM Results + Market Analysis (Q1–Q8) + Final Recommendation
   Tab 2 — Analysis Hub (Monte Carlo · Sensitivity · AHP · WCPI)
@@ -26,6 +27,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
+import ai_backend as ai
 
 st.set_page_config(
     page_title="MIMMC2026 Q3 — 2030 Market Forecast",
@@ -881,6 +883,9 @@ with tab1:
                   "Advanced Pioneer" if best["Product"]=="Advanced" else "Accessible Basic"]
     }))
 
+    # ── AI STRATEGIC REPORT (server-side; WiFi, fails fast to fallback) ───────
+    ai.render_ai_report(best, price_map, winner_share, ahp_CR)
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2: ANALYSIS HUB
@@ -924,7 +929,7 @@ with tab2:
         and marketing intervention X(t) — all directly observable in the robot vacuum market.
         This contextual suitability makes it the scientifically correct choice.
         </div>""", unsafe_allow_html=True)
-  
+
     # 2A Monte Carlo
     with s2abc:
         st.markdown(f"""<div class="asmp"><strong>METHOD (Updated.ipynb monte_carlo_sensitive):</strong>
@@ -1167,19 +1172,33 @@ with tab3:
     <strong>Price convention:</strong> Higher priceChange = price drops = adoption rises (standardised).
     </div>""", unsafe_allow_html=True)
 
-    html_file = "world_diffusion_competitor_war_multiplayer_fixed.html"
-    for path in [os.path.join(os.path.dirname(os.path.abspath(__file__)), html_file), html_file]:
-        if os.path.exists(path):
-            with open(path,"r",encoding="utf-8") as f:
-                components.html(f.read(), height=2400, scrolling=True)
+    # ── AI STRATEGY COACH (server-side; advises on your current move) ─────────
+    ai.render_ai_coach(SEGS["Segment"].tolist())
+
+    # ── AI POST-GAME DEBRIEF (server-side; analysis after a round ends) ───────
+    ai.render_ai_postgame()
+
+    # ── Embed the HTML war-game (tries several filenames so a rename can't break it) ──
+    html_candidates = [
+        "world_diffusion_competitor_war_multiplayer_fixed.html",
+        "world_diffusion_competitor_war_v6_lightglobe.html",
+        "world_diffusion_competitor_war_v6.html",
+        "world_diffusion_competitor_war.html",
+    ]
+    base = os.path.dirname(os.path.abspath(__file__))
+    loaded = False
+    for name in html_candidates:
+        for path in (os.path.join(base, name), name):
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    components.html(f.read(), height=2400, scrolling=True)
+                loaded = True
+                break
+        if loaded:
             break
-    else:
-        st.warning(f"""**Game file not found.**  
-Place `{html_file}` in the same folder as `app.py` and restart.  
-```
-📁 your_folder/
-├── app.py
-├── {html_file}
-├── requirements.txt
-└── README.md
-```""")
+    if not loaded:
+        st.warning(
+            "**Game file not found.** Place one of these next to `app.py` and restart:\n\n"
+            "- `world_diffusion_competitor_war_multiplayer_fixed.html`\n"
+            "- `world_diffusion_competitor_war_v6_lightglobe.html`"
+        )
